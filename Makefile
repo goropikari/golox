@@ -5,3 +5,6 @@ build:
 
 test:
 	go test -v
+
+ast:
+	go run tools/generate_ast.go ./ && go fmt .
