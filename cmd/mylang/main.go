@@ -10,32 +10,41 @@ import (
 	"os"
 	"strings"
 	"unicode"
+
+	"github.com/goropikari/mylang"
 )
 
 func main() {
+	runtime := mylang.NewRuntime()
+
 	if len(os.Args) > 2 {
 		fmt.Println("Usage: mylang [script]")
 		os.Exit(64)
 	} else if len(os.Args) == 2 {
-		runFile(os.Args[1])
+		runFile(os.Args[1], runtime)
 	} else {
-		runPrompt()
+		runPrompt(runtime)
 	}
 }
 
-func runFile(filepath string) {
+func runFile(filepath string, r *mylang.Runtime) {
 	source, err := ioutil.ReadFile(filepath)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println(source)
-	run(source)
+	// fmt.Println(source)
+	r.Run(bytes.NewBuffer(source))
+
+	if r.HadError {
+		os.Exit(65)
+	}
 }
 
-func runPrompt() {
+func runPrompt(r *mylang.Runtime) {
 	stdin := bufio.NewReader(os.Stdin)
-	buf := bytes.Buffer{}
+	buf := &bytes.Buffer{}
+
 	for {
 		inBlock := false
 		for {
@@ -61,14 +70,12 @@ func runPrompt() {
 			inBlock = true
 		}
 
-		run(buf.Bytes())
-		fmt.Println(buf.Bytes())
-		fmt.Print(buf.String())
+		r.Run(buf)
+		r.HadError = false
+		// fmt.Println(buf.Bytes())
+		// fmt.Print(buf.String())
 		buf.Reset()
 	}
-}
-
-func run(source []byte) {
 }
 
 func canContinueRead(line string) bool {
