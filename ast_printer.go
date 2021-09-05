@@ -31,6 +31,10 @@ func (ap *AstPrinter) visitLiteralExpr(expr *Literal) (interface{}, error) {
 	return fmt.Sprintf("%v", expr.Value), nil
 }
 
+func (ap *AstPrinter) visitLogicalExpr(expr *Logical) (interface{}, error) {
+	return nil, nil
+}
+
 func (ap *AstPrinter) visitUnaryExpr(expr *Unary) (interface{}, error) {
 	return ap.parenthesize(expr.Operator.Lexeme, expr.Right)
 }
@@ -49,6 +53,10 @@ func (ap *AstPrinter) visitBlockStmt(b *Block) (interface{}, error) {
 
 func (ap *AstPrinter) visitExpressionStmt(e *Expression) (interface{}, error) {
 	return e.Expression.Accept(ap)
+}
+
+func (ap *AstPrinter) visitIf_Stmt(i *If_) (interface{}, error) {
+	return nil, nil
 }
 
 func (ap *AstPrinter) visitPrint_Stmt(p *Print_) (interface{}, error) {

@@ -112,6 +112,25 @@ func (i *Interpreter) visitLiteralExpr(expr *Literal) (interface{}, error) {
 	return expr.Value, nil
 }
 
+func (i *Interpreter) visitLogicalExpr(expr *Logical) (interface{}, error) {
+	left, err := i.evaluate(expr.Left)
+	if err != nil {
+		return nil, err
+	}
+
+	if expr.Operator.Type == Or {
+		if i.isTruthy(left) {
+			return left, nil
+		}
+	} else {
+		if !i.isTruthy(left) {
+			return left, nil
+		}
+	}
+
+	return i.evaluate(expr.Right)
+}
+
 func (i *Interpreter) visitGroupingExpr(expr *Grouping) (interface{}, error) {
 	return i.evaluate(expr.Expression)
 }
@@ -208,6 +227,19 @@ func isEqual(a, b interface{}) bool {
 func (i *Interpreter) visitExpressionStmt(stmt *Expression) (interface{}, error) {
 	return i.evaluate(stmt.Expression)
 	// return nil, nil
+}
+
+func (i *Interpreter) visitIf_Stmt(stmt *If_) (interface{}, error) {
+	val, err := i.evaluate(stmt.Condition)
+	if err != nil {
+		return nil, err
+	}
+	if i.isTruthy(val) {
+		return i.execute(stmt.ThenBranch)
+	} else if stmt.ElseBranch != nil {
+		return i.execute(stmt.ElseBranch)
+	}
+	return nil, nil
 }
 
 func (i *Interpreter) visitPrint_Stmt(stmt *Print_) (interface{}, error) {

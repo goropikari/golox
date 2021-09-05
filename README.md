@@ -1,7 +1,7 @@
 # TLPS (Toy Language Processing System)
 
 TLPS is a toy language processing system for me to study.
-TLPS adapts [Off-side rule](https://en.wikipedia.org/wiki/Off-side_rule) like python.
+TLPS adopts [Off-side rule](https://en.wikipedia.org/wiki/Off-side_rule) like python.
 
 
 

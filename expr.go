@@ -10,6 +10,7 @@ type VisitorExpr interface {
 	visitBinaryExpr(*Binary) (interface{}, error)
 	visitGroupingExpr(*Grouping) (interface{}, error)
 	visitLiteralExpr(*Literal) (interface{}, error)
+	visitLogicalExpr(*Logical) (interface{}, error)
 	visitUnaryExpr(*Unary) (interface{}, error)
 	visitVariableExpr(*Variable) (interface{}, error)
 }
@@ -92,6 +93,28 @@ func (l *Literal) Accept(visitor VisitorExpr) (interface{}, error) {
 func (rec *Literal) IsType(v interface{}) bool {
 	switch v.(type) {
 	case *Literal:
+		return true
+	}
+	return false
+}
+
+type Logical struct {
+	Left     Expr
+	Operator *Token
+	Right    Expr
+}
+
+func NewLogical(left Expr, operator *Token, right Expr) Expr {
+	return &Logical{left, operator, right}
+}
+
+func (l *Logical) Accept(visitor VisitorExpr) (interface{}, error) {
+	return visitor.visitLogicalExpr(l)
+}
+
+func (rec *Logical) IsType(v interface{}) bool {
+	switch v.(type) {
+	case *Logical:
 		return true
 	}
 	return false

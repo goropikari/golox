@@ -51,6 +51,9 @@ func (p *Parser) declaration() (Stmt, error) {
 }
 
 func (p *Parser) statement() (Stmt, error) {
+	if p.match(If) {
+		return p.ifStatement()
+	}
 	if p.match(Print) {
 		return p.printStatement()
 	}
@@ -65,13 +68,45 @@ func (p *Parser) statement() (Stmt, error) {
 	return p.expressionStatement()
 }
 
+func (p *Parser) ifStatement() (Stmt, error) {
+	condition, err := p.expression()
+	if err != nil {
+		return nil, err
+	}
+	p.consume(Colon, "Expect ':' after if condition.")
+	p.consume(Newline, "Expect '\\n' after if condition")
+
+	thenBranch, err := p.statement()
+	if err != nil {
+		return nil, err
+	}
+
+	var elseBranch Stmt = nil
+	if p.match(Elseif) {
+		elseBranch, err = p.ifStatement()
+		if err != nil {
+			return nil, err
+		}
+	}
+	if p.match(Else) {
+		p.consume(Colon, "Expect ':' after else.")
+		p.consume(Newline, "Expect '\\n' after else")
+		elseBranch, err = p.statement()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return NewIf_(condition, thenBranch, elseBranch), nil
+}
+
 func (p *Parser) printStatement() (Stmt, error) {
 	value, err := p.expression()
 	if err != nil {
 		return nil, err
 	}
 	// _, err = p.consume(Semicolon, "Expect ';' after value.")
-	_, err = p.consumeTerm("Expect ';' or '\n', after value")
+	_, err = p.consumeTerm()
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +129,7 @@ func (p *Parser) varDecralation() (Stmt, error) {
 	}
 
 	// _, err = p.consume(Semicolon, "Expect ';' after variable declaration")
-	_, err = p.consumeTerm("Expect ';' or '\n' after variable declaration")
+	_, err = p.consumeTerm()
 	if err != nil {
 		return nil, err
 	}
@@ -109,7 +144,7 @@ func (p *Parser) expressionStatement() (Stmt, error) {
 	}
 
 	// _, err = p.consume(Semicolon, "Expect ';' after expression")
-	_, err = p.consumeTerm("Expect ';' or '\n' after expression")
+	_, err = p.consumeTerm()
 	if err != nil {
 		return nil, err
 	}
@@ -132,7 +167,7 @@ func (p *Parser) block() ([]Stmt, error) {
 }
 
 func (p *Parser) assignment() (Expr, error) {
-	expr, err := p.equality()
+	expr, err := p.or()
 	if err != nil {
 		return nil, err
 	}
@@ -149,6 +184,42 @@ func (p *Parser) assignment() (Expr, error) {
 		}
 
 		p.runtime.ErrorTokenMessage(equals, "Invalid assignment target.")
+	}
+
+	return expr, nil
+}
+
+func (p *Parser) or() (Expr, error) {
+	expr, err := p.and()
+	if err != nil {
+		return nil, err
+	}
+
+	for p.match(Or) {
+		operator := p.previous()
+		right, err := p.and()
+		if err != nil {
+			return nil, err
+		}
+		expr = NewLogical(expr, operator, right)
+	}
+
+	return expr, nil
+}
+
+func (p *Parser) and() (Expr, error) {
+	expr, err := p.equality()
+	if err != nil {
+		return nil, err
+	}
+
+	for p.match(And) {
+		operator := p.previous()
+		right, err := p.equality()
+		if err != nil {
+			return nil, err
+		}
+		expr = NewLogical(expr, operator, right)
 	}
 
 	return expr, nil
@@ -300,7 +371,7 @@ func (p *Parser) consume(typ TokenType, message string) (*Token, error) {
 	return nil, p.NewParseError(p.peek(), message)
 }
 
-func (p *Parser) consumeTerm(message string) (*Token, error) {
+func (p *Parser) consumeTerm() (*Token, error) {
 	if p.check(Newline) {
 		return p.advance(), nil
 	}
@@ -312,7 +383,7 @@ func (p *Parser) consumeTerm(message string) (*Token, error) {
 		return t, nil
 	}
 
-	return nil, p.NewParseError(p.peek(), message)
+	return nil, p.NewParseError(p.peek(), "Expect ';' or '\\n' after expression")
 }
 
 func (p *Parser) check(typ TokenType) bool {

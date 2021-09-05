@@ -8,6 +8,7 @@ type Stmt interface {
 type VisitorStmt interface {
 	visitBlockStmt(*Block) (interface{}, error)
 	visitExpressionStmt(*Expression) (interface{}, error)
+	visitIf_Stmt(*If_) (interface{}, error)
 	visitPrint_Stmt(*Print_) (interface{}, error)
 	visitVar_Stmt(*Var_) (interface{}, error)
 }
@@ -47,6 +48,28 @@ func (e *Expression) Accept(visitor VisitorStmt) (interface{}, error) {
 func (rec *Expression) IsType(v interface{}) bool {
 	switch v.(type) {
 	case *Expression:
+		return true
+	}
+	return false
+}
+
+type If_ struct {
+	Condition  Expr
+	ThenBranch Stmt
+	ElseBranch Stmt
+}
+
+func NewIf_(condition Expr, thenBranch Stmt, elseBranch Stmt) Stmt {
+	return &If_{condition, thenBranch, elseBranch}
+}
+
+func (i *If_) Accept(visitor VisitorStmt) (interface{}, error) {
+	return visitor.visitIf_Stmt(i)
+}
+
+func (rec *If_) IsType(v interface{}) bool {
+	switch v.(type) {
+	case *If_:
 		return true
 	}
 	return false
