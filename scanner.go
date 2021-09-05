@@ -149,8 +149,11 @@ func (s *Scanner) scanToken() {
 	case '/':
 		if s.match('/') {
 			// A comment goes until the end of the line.
-			for s.peek() != '\n' && s.isAtEnd() {
+			for s.peek() != '\n' && !s.isAtEnd() {
 				s.advance()
+			}
+			if s.match('\n') {
+				s.line++
 			}
 		} else {
 			s.addToken(Slash, nil)
@@ -161,8 +164,13 @@ func (s *Scanner) scanToken() {
 	case '\t':
 		break
 	case '\n':
+		s.addNewline()
 		s.line++
 		s.isFirst = true
+		for s.peek() == '\n' && !s.isAtEnd() {
+			s.line++
+			s.advance()
+		}
 		break
 	case '"':
 		s.addString()
@@ -203,6 +211,11 @@ func (s *Scanner) addToken(tt TokenType, literal interface{}) {
 	s.isFirst = false
 	text := string(s.sourceRunes[s.start:s.current])
 	s.tokens = append(s.tokens, NewToken(tt, text, literal, s.line))
+}
+
+func (s *Scanner) addNewline() {
+	s.isFirst = true
+	s.tokens = append(s.tokens, NewToken(Newline, "\\n", nil, s.line))
 }
 
 func (s *Scanner) addBlock() {

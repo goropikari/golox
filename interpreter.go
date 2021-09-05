@@ -13,14 +13,19 @@ func NewInterpreter(runtime *Runtime) *Interpreter {
 	return &Interpreter{runtime: runtime}
 }
 
-func (i *Interpreter) Interpret(expression Expr) (string, error) {
-	value, err := i.evaluate(expression)
-	if err != nil {
-		i.runtime.RuntimeError(err)
+func (i *Interpreter) Interpret(statements []Stmt) (string, error) {
+	var s string
+	var err error
+	for _, statement := range statements {
+		v, er := i.execute(statement)
+		err = er
+		s = stringfy(v)
+		if err != nil {
+			i.runtime.RuntimeError(err)
+		}
 	}
-	// fmt.Println(stringfy(value))
 
-	return stringfy(value), err
+	return s, err
 }
 
 func (i *Interpreter) visitBinaryExpr(expr *Binary) (interface{}, error) {
@@ -132,6 +137,10 @@ func (i *Interpreter) visitUnaryExpr(expr *Unary) (interface{}, error) {
 	return nil, RuntimeError.New(nil, "Unreachable")
 }
 
+func (i *Interpreter) visitVariableExpr(expr *Variable) (interface{}, error) {
+	return i.runtime.Environment.Get(expr.Name)
+}
+
 func checkNumberOperand(operator *Token, operand interface{}) error {
 	if reflect.ValueOf(operand).Kind() == reflect.Float64 {
 		return nil
@@ -163,6 +172,28 @@ func (i *Interpreter) evaluate(expr Expr) (interface{}, error) {
 	return expr.Accept(i)
 }
 
+func (i *Interpreter) execute(stmt Stmt) (interface{}, error) {
+	return stmt.Accept(i)
+}
+
+func (i *Interpreter) executeBlock(statements []Stmt, environment *Environment) (interface{}, error) {
+	previous := i.runtime.Environment
+	defer func() { i.runtime.Environment = previous }()
+	i.runtime.Environment = environment
+	for _, statement := range statements {
+		_, err := i.execute(statement)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return nil, nil
+}
+
+func (i *Interpreter) visitBlockStmt(stmt *Block) (interface{}, error) {
+	return i.executeBlock(stmt.Statements, NewEnvironment(i.runtime.Environment))
+}
+
 func isEqual(a, b interface{}) bool {
 	if a == nil && b == nil {
 		return true
@@ -172,6 +203,48 @@ func isEqual(a, b interface{}) bool {
 	}
 
 	return a == b
+}
+
+func (i *Interpreter) visitExpressionStmt(stmt *Expression) (interface{}, error) {
+	return i.evaluate(stmt.Expression)
+	// return nil, nil
+}
+
+func (i *Interpreter) visitPrint_Stmt(stmt *Print_) (interface{}, error) {
+	value, err := i.evaluate(stmt.Expression)
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Println(stringfy(value))
+	return nil, nil
+
+}
+
+func (i *Interpreter) visitVar_Stmt(stmt *Var_) (interface{}, error) {
+	var value interface{} = nil
+	if stmt.Initializer != nil {
+		v, err := i.evaluate(stmt.Initializer)
+		value = v
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	i.runtime.Environment.Define(stmt.Name.Lexeme, value)
+	return nil, nil
+}
+
+func (i *Interpreter) visitAssignExpr(expr *Assign) (interface{}, error) {
+	value, err := i.evaluate(expr.Value)
+	if err != nil {
+		return nil, err
+	}
+	err = i.runtime.Environment.Assign(expr.Name, value)
+	if err != nil {
+		return nil, err
+	}
+	return value, nil
 }
 
 func isFloat64(v interface{}) bool {

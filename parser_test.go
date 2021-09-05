@@ -24,6 +24,7 @@ func TestParser(t *testing.T) {
 				tlps.NewToken(tlps.Number, "2", 2.0, 1),
 				tlps.NewToken(tlps.Star, "*", nil, 1),
 				tlps.NewToken(tlps.Number, "3", 3.0, 1),
+				tlps.NewToken(tlps.Semicolon, ";", nil, 1),
 				tlps.NewToken(tlps.EOF, "", nil, 1),
 			},
 		},
@@ -32,7 +33,7 @@ func TestParser(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			parser := tlps.NewParser(r, tt.given)
-			expression := parser.Parse()
+			expression, _ := parser.Parse()
 			actual, _ := tlps.NewAstPrinter().Print(expression)
 			assert.Equal(t, tt.expected, actual)
 		})

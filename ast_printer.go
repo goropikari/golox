@@ -11,8 +11,8 @@ func NewAstPrinter() *AstPrinter {
 	return &AstPrinter{}
 }
 
-func (ap *AstPrinter) Print(expr Expr) (string, error) {
-	val, err := expr.Accept(ap)
+func (ap *AstPrinter) Print(stmts []Stmt) (string, error) {
+	val, err := stmts[0].Accept(ap)
 	return val.(string), err
 }
 
@@ -33,6 +33,30 @@ func (ap *AstPrinter) visitLiteralExpr(expr *Literal) (interface{}, error) {
 
 func (ap *AstPrinter) visitUnaryExpr(expr *Unary) (interface{}, error) {
 	return ap.parenthesize(expr.Operator.Lexeme, expr.Right)
+}
+
+func (ap *AstPrinter) visitAssignExpr(expr *Assign) (interface{}, error) {
+	return nil, nil
+}
+
+func (ap *AstPrinter) visitVariableExpr(expr *Variable) (interface{}, error) {
+	return nil, nil
+}
+
+func (ap *AstPrinter) visitBlockStmt(b *Block) (interface{}, error) {
+	return nil, nil
+}
+
+func (ap *AstPrinter) visitExpressionStmt(e *Expression) (interface{}, error) {
+	return e.Expression.Accept(ap)
+}
+
+func (ap *AstPrinter) visitPrint_Stmt(p *Print_) (interface{}, error) {
+	return nil, nil
+}
+
+func (ap *AstPrinter) visitVar_Stmt(v *Var_) (interface{}, error) {
+	return nil, nil
 }
 
 func (ap *AstPrinter) parenthesize(name string, exprs ...Expr) (string, error) {

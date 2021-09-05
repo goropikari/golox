@@ -14,10 +14,19 @@ func main() {
 	}
 	outputDir := os.Args[1]
 	defineAst(outputDir, "Expr", []string{
-		"Binary : Left Expr, Operator *Token, Right Expr",
-		"Grouping : Expression Expr",
-		"Literal : Value interface{}",
-		"Unary : Operator *Token, Right Expr",
+		"Assign : name *Token, value Expr",
+		"Binary : left Expr, operator *Token, right Expr",
+		"Grouping : expression Expr",
+		"Literal : value interface{}",
+		"Unary : operator *Token, right Expr",
+		"Variable : name *Token",
+	})
+
+	defineAst(outputDir, "Stmt", []string{
+		"Block : statements []Stmt",
+		"Expression: expression Expr",
+		"Print_ : expression Expr",
+		"Var_ : name *Token, initializer Expr",
 	})
 }
 
@@ -33,7 +42,8 @@ func defineAst(outputDir string, baseName string, types []string) error {
 	writer.WriteString("package tlps\n")
 
 	writer.WriteString("type " + baseName + " interface {")
-	writer.WriteString("Accept(Visitor) (interface{}, error)\n")
+	writer.WriteString("Accept(Visitor" + baseName + ") (interface{}, error)\n")
+	writer.WriteString("IsType(interface{}) bool\n")
 	writer.WriteString("}\n\n")
 
 	defineVisitor(writer, baseName, types)
@@ -43,6 +53,7 @@ func defineAst(outputDir string, baseName string, types []string) error {
 		className := strings.TrimSpace(t[0])
 		fields := strings.TrimSpace(t[1])
 		defineType(writer, baseName, className, fields)
+		defineIsType(writer, className)
 	}
 
 	return nil
@@ -52,7 +63,14 @@ func defineType(writer *bufio.Writer, baseName, className, fields string) {
 	writer.WriteString("type " + className + " struct {\n")
 	fieldList := strings.Split(fields, ", ")
 	for _, field := range fieldList {
-		writer.WriteString(field + "\n")
+		vs := strings.Split(field, " ")
+		for i, v := range vs {
+			if i == 0 {
+				writer.WriteString(strings.Title(v) + " ")
+			} else {
+				writer.WriteString(v + "\n")
+			}
+		}
 	}
 	writer.WriteString("}\n\n")
 
@@ -68,17 +86,26 @@ func defineType(writer *bufio.Writer, baseName, className, fields string) {
 	writer.WriteString("}\n")
 	writer.WriteString("}\n\n")
 
-	writer.WriteString("func (" + strings.ToLower(string(className[0])) + " *" + className + ") Accept(visitor Visitor) (interface{}, error) {\n")
-	writer.WriteString("return visitor.visit" + className + baseName + "(" + strings.ToLower(string(className[0])) + ")")
-	writer.WriteString("}\n")
-
+	writer.WriteString("func (" + strings.ToLower(string(className[0])) + " *" + className + ") Accept(visitor Visitor" + baseName + ") (interface{}, error) {\n")
+	writer.WriteString("return visitor.visit" + className + baseName + "(" + strings.ToLower(string(className[0])) + ")\n")
+	writer.WriteString("}\n\n")
 }
 
 func defineVisitor(writer *bufio.Writer, baseName string, types []string) {
-	writer.WriteString("type Visitor interface {\n")
+	writer.WriteString("type Visitor" + baseName + " interface {\n")
 	for _, typ := range types {
 		typName := strings.TrimSpace(strings.Split(typ, ":")[0])
 		writer.WriteString("visit" + typName + baseName + "(*" + typName + ")" + " (interface{}, error)\n")
 	}
 	writer.WriteString("}\n\n")
+}
+
+func defineIsType(writer *bufio.Writer, className string) {
+	writer.WriteString("func (rec *" + className + ") IsType(v interface{}) bool {\n")
+	writer.WriteString("switch v.(type) {\n")
+	writer.WriteString("case *" + className + ":\n")
+	writer.WriteString("return true\n")
+	writer.WriteString("}\n")
+	writer.WriteString("return false")
+	writer.WriteString("}\n")
 }
