@@ -57,6 +57,9 @@ func (p *Parser) statement() (Stmt, error) {
 	if p.match(Print) {
 		return p.printStatement()
 	}
+	if p.match(While) {
+		return p.whileStatement()
+	}
 	if p.match(LeftBrace) {
 		b, err := p.block()
 		if err != nil {
@@ -112,6 +115,21 @@ func (p *Parser) printStatement() (Stmt, error) {
 	}
 
 	return NewPrint_(value), nil
+}
+
+func (p *Parser) whileStatement() (Stmt, error) {
+	condition, err := p.expression()
+	if err != nil {
+		return nil, err
+	}
+	p.consume(Colon, "Expect ':' after condition")
+	p.consume(Newline, "Expect '\\n' after condition")
+	body, err := p.statement()
+	if err != nil {
+		return nil, err
+	}
+
+	return NewWhile_(condition, body), nil
 }
 
 func (p *Parser) varDecralation() (Stmt, error) {

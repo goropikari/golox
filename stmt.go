@@ -11,6 +11,7 @@ type VisitorStmt interface {
 	visitIf_Stmt(*If_) (interface{}, error)
 	visitPrint_Stmt(*Print_) (interface{}, error)
 	visitVar_Stmt(*Var_) (interface{}, error)
+	visitWhile_Stmt(*While_) (interface{}, error)
 }
 
 type Block struct {
@@ -111,6 +112,27 @@ func (v *Var_) Accept(visitor VisitorStmt) (interface{}, error) {
 func (rec *Var_) IsType(v interface{}) bool {
 	switch v.(type) {
 	case *Var_:
+		return true
+	}
+	return false
+}
+
+type While_ struct {
+	Condition Expr
+	Body      Stmt
+}
+
+func NewWhile_(condition Expr, body Stmt) Stmt {
+	return &While_{condition, body}
+}
+
+func (w *While_) Accept(visitor VisitorStmt) (interface{}, error) {
+	return visitor.visitWhile_Stmt(w)
+}
+
+func (rec *While_) IsType(v interface{}) bool {
+	switch v.(type) {
+	case *While_:
 		return true
 	}
 	return false

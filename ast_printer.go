@@ -63,6 +63,10 @@ func (ap *AstPrinter) visitPrint_Stmt(p *Print_) (interface{}, error) {
 	return nil, nil
 }
 
+func (ap *AstPrinter) visitWhile_Stmt(p *While_) (interface{}, error) {
+	return nil, nil
+}
+
 func (ap *AstPrinter) visitVar_Stmt(v *Var_) (interface{}, error) {
 	return nil, nil
 }

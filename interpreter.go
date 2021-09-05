@@ -250,7 +250,15 @@ func (i *Interpreter) visitPrint_Stmt(stmt *Print_) (interface{}, error) {
 
 	fmt.Println(stringfy(value))
 	return nil, nil
+}
 
+func (i *Interpreter) visitWhile_Stmt(stmt *While_) (interface{}, error) {
+	v, _ := i.evaluate(stmt.Condition)
+	for ; i.isTruthy(v); v, _ = i.evaluate(stmt.Condition) {
+		i.execute(stmt.Body)
+	}
+
+	return nil, nil
 }
 
 func (i *Interpreter) visitVar_Stmt(stmt *Var_) (interface{}, error) {
