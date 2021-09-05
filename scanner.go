@@ -259,7 +259,7 @@ func (s *Scanner) addString() {
 	// The closing "
 	s.advance()
 
-	value := s.sourceRunes[s.start+1 : s.current-1]
+	value := string(s.sourceRunes[s.start+1 : s.current-1])
 	s.addToken(String, value)
 }
 

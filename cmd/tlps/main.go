@@ -39,6 +39,9 @@ func runFile(filepath string, r *tlps.Runtime) {
 	if r.HadError {
 		os.Exit(65)
 	}
+	if r.HadRuntimeError {
+		os.Exit(70)
+	}
 }
 
 func runPrompt(r *tlps.Runtime) {

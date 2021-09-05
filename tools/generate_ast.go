@@ -33,7 +33,7 @@ func defineAst(outputDir string, baseName string, types []string) error {
 	writer.WriteString("package tlps\n")
 
 	writer.WriteString("type " + baseName + " interface {")
-	writer.WriteString("Accept(Visitor) interface{}\n")
+	writer.WriteString("Accept(Visitor) (interface{}, error)\n")
 	writer.WriteString("}\n\n")
 
 	defineVisitor(writer, baseName, types)
@@ -68,7 +68,7 @@ func defineType(writer *bufio.Writer, baseName, className, fields string) {
 	writer.WriteString("}\n")
 	writer.WriteString("}\n\n")
 
-	writer.WriteString("func (" + strings.ToLower(string(className[0])) + " *" + className + ") Accept(visitor Visitor) interface{} {\n")
+	writer.WriteString("func (" + strings.ToLower(string(className[0])) + " *" + className + ") Accept(visitor Visitor) (interface{}, error) {\n")
 	writer.WriteString("return visitor.visit" + className + baseName + "(" + strings.ToLower(string(className[0])) + ")")
 	writer.WriteString("}\n")
 
@@ -78,7 +78,7 @@ func defineVisitor(writer *bufio.Writer, baseName string, types []string) {
 	writer.WriteString("type Visitor interface {\n")
 	for _, typ := range types {
 		typName := strings.TrimSpace(strings.Split(typ, ":")[0])
-		writer.WriteString("visit" + typName + baseName + "(*" + typName + ")" + " interface{}\n")
+		writer.WriteString("visit" + typName + baseName + "(*" + typName + ")" + " (interface{}, error)\n")
 	}
 	writer.WriteString("}\n\n")
 }

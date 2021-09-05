@@ -8,12 +8,13 @@ import (
 
 // Runtime is struct of Runtime
 type Runtime struct {
-	HadError bool
+	HadError        bool
+	HadRuntimeError bool
 }
 
 // NewRuntime is constructor of Runtime
 func NewRuntime() *Runtime {
-	return &Runtime{HadError: false}
+	return &Runtime{HadError: false, HadRuntimeError: false}
 }
 
 // Run runs script
@@ -28,11 +29,15 @@ func (r *Runtime) Run(source *bytes.Buffer) {
 	parser := NewParser(r, tokens)
 	expression := parser.Parse()
 
+	// Stop if there was a syntax error
 	if r.HadError {
 		return
 	}
 
-	fmt.Println(NewAstPrinter().Print(expression))
+	// fmt.Println(NewAstPrinter().Print(expression))
+	interpreter := NewInterpreter(r)
+	val, _ := interpreter.Interpret(expression)
+	fmt.Println(val)
 }
 
 // ErrorMessage prints error massage at stderr
@@ -53,4 +58,10 @@ func (r *Runtime) ErrorTokenMessage(token *Token, message string) {
 func (r *Runtime) report(line int, where string, message string) {
 	fmt.Fprintln(os.Stderr, "[line "+fmt.Sprint(line)+"] Error"+where+": "+message)
 	r.HadError = true
+}
+
+func (r *Runtime) RuntimeError(err error) {
+	e := err.(*CustomError)
+	fmt.Fprint(os.Stderr, err.Error()+"\n[line "+fmt.Sprint(e.Token.Line)+"]")
+	r.HadRuntimeError = true
 }

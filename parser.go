@@ -220,5 +220,5 @@ func (p *Parser) synchronize() {
 // NewParseError is constructor of ParseError
 func (p *Parser) NewParseError(token *Token, message string) error {
 	p.runtime.ErrorTokenMessage(token, message)
-	return ParseError
+	return ParseError.New(token, message)
 }

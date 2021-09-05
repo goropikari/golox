@@ -1,14 +1,14 @@
 package tlps
 
 type Expr interface {
-	Accept(Visitor) interface{}
+	Accept(Visitor) (interface{}, error)
 }
 
 type Visitor interface {
-	visitBinaryExpr(*Binary) interface{}
-	visitGroupingExpr(*Grouping) interface{}
-	visitLiteralExpr(*Literal) interface{}
-	visitUnaryExpr(*Unary) interface{}
+	visitBinaryExpr(*Binary) (interface{}, error)
+	visitGroupingExpr(*Grouping) (interface{}, error)
+	visitLiteralExpr(*Literal) (interface{}, error)
+	visitUnaryExpr(*Unary) (interface{}, error)
 }
 
 type Binary struct {
@@ -21,7 +21,7 @@ func NewBinary(Left Expr, Operator *Token, Right Expr) Expr {
 	return &Binary{Left, Operator, Right}
 }
 
-func (b *Binary) Accept(visitor Visitor) interface{} {
+func (b *Binary) Accept(visitor Visitor) (interface{}, error) {
 	return visitor.visitBinaryExpr(b)
 }
 
@@ -33,7 +33,7 @@ func NewGrouping(Expression Expr) Expr {
 	return &Grouping{Expression}
 }
 
-func (g *Grouping) Accept(visitor Visitor) interface{} {
+func (g *Grouping) Accept(visitor Visitor) (interface{}, error) {
 	return visitor.visitGroupingExpr(g)
 }
 
@@ -45,7 +45,7 @@ func NewLiteral(Value interface{}) Expr {
 	return &Literal{Value}
 }
 
-func (l *Literal) Accept(visitor Visitor) interface{} {
+func (l *Literal) Accept(visitor Visitor) (interface{}, error) {
 	return visitor.visitLiteralExpr(l)
 }
 
@@ -58,6 +58,6 @@ func NewUnary(Operator *Token, Right Expr) Expr {
 	return &Unary{Operator, Right}
 }
 
-func (u *Unary) Accept(visitor Visitor) interface{} {
+func (u *Unary) Accept(visitor Visitor) (interface{}, error) {
 	return visitor.visitUnaryExpr(u)
 }

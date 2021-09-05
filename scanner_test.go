@@ -66,7 +66,7 @@ func TestScanner(t *testing.T) {
 			expected: tlps.TokenList{
 				tlps.NewToken(tlps.Identifier, "x", nil, 1),
 				tlps.NewToken(tlps.Equal, "=", nil, 1),
-				tlps.NewToken(tlps.String, "\"hoge こんにちは piyo\"", []rune("hoge こんにちは piyo"), 1),
+				tlps.NewToken(tlps.String, "\"hoge こんにちは piyo\"", "hoge こんにちは piyo", 1),
 				tlps.NewToken(tlps.EOF, "", nil, 1),
 			},
 			code: "x = \"hoge こんにちは piyo\"",

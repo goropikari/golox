@@ -33,7 +33,7 @@ func TestParser(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			parser := tlps.NewParser(r, tt.given)
 			expression := parser.Parse()
-			actual := tlps.NewAstPrinter().Print(expression)
+			actual, _ := tlps.NewAstPrinter().Print(expression)
 			assert.Equal(t, tt.expected, actual)
 		})
 	}
