@@ -21,19 +21,36 @@ func (r *Runtime) Run(source *bytes.Buffer) {
 
 	scanner := NewScanner(r, source)
 	tokens := scanner.ScanTokens()
+	// for _, token := range tokens {
+	// 	fmt.Println(token)
+	// }
 
-	for _, token := range tokens {
-		fmt.Println(token)
+	parser := NewParser(r, tokens)
+	expression := parser.Parse()
+
+	if r.HadError {
+		return
 	}
+
+	fmt.Println(NewAstPrinter().Print(expression))
 }
 
 // ErrorMessage prints error massage at stderr
 func (r *Runtime) ErrorMessage(line int, message string) {
-	r.Report(line, "", message)
+	r.report(line, "", message)
+}
+
+// ErrorTokenMessage prints error message at stderr
+func (r *Runtime) ErrorTokenMessage(token *Token, message string) {
+	if token.Type == EOF {
+		r.report(token.Line, " at end", message)
+	} else {
+		r.report(token.Line, " at '"+token.Lexeme+"'", message)
+	}
 }
 
 // Report prints error masseg at stderr
-func (r *Runtime) Report(line int, where string, message string) {
+func (r *Runtime) report(line int, where string, message string) {
 	fmt.Fprintln(os.Stderr, "[line "+fmt.Sprint(line)+"] Error"+where+": "+message)
 	r.HadError = true
 }
