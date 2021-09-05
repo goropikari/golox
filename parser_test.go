@@ -1,39 +1,39 @@
-package mylang_test
+package tlps_test
 
 import (
 	"testing"
 
-	"github.com/goropikari/mylang"
+	"github.com/goropikari/tlps"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestParser(t *testing.T) {
-	r := mylang.NewRuntime()
+	r := tlps.NewRuntime()
 
 	var tests = []struct {
 		name     string
 		expected string
-		given    mylang.TokenList
+		given    tlps.TokenList
 	}{
 		{
 			name:     "+ * precedence: 1 + 2 * 3",
 			expected: "(+ 1 (* 2 3))",
-			given: mylang.TokenList{
-				mylang.NewToken(mylang.Number, "1", 1.0, 1),
-				mylang.NewToken(mylang.Plus, "+", nil, 1),
-				mylang.NewToken(mylang.Number, "2", 2.0, 1),
-				mylang.NewToken(mylang.Star, "*", nil, 1),
-				mylang.NewToken(mylang.Number, "3", 3.0, 1),
-				mylang.NewToken(mylang.EOF, "", nil, 1),
+			given: tlps.TokenList{
+				tlps.NewToken(tlps.Number, "1", 1.0, 1),
+				tlps.NewToken(tlps.Plus, "+", nil, 1),
+				tlps.NewToken(tlps.Number, "2", 2.0, 1),
+				tlps.NewToken(tlps.Star, "*", nil, 1),
+				tlps.NewToken(tlps.Number, "3", 3.0, 1),
+				tlps.NewToken(tlps.EOF, "", nil, 1),
 			},
 		},
 	}
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			parser := mylang.NewParser(r, tt.given)
+			parser := tlps.NewParser(r, tt.given)
 			expression := parser.Parse()
-			actual := mylang.NewAstPrinter().Print(expression)
+			actual := tlps.NewAstPrinter().Print(expression)
 			assert.Equal(t, tt.expected, actual)
 		})
 	}

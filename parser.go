@@ -1,4 +1,4 @@
-package mylang
+package tlps
 
 // Parser is struct of parser
 type Parser struct {

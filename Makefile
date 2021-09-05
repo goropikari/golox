@@ -1,4 +1,4 @@
-BIN := mylang
+BIN := tlps
 
 build:
 	go build -o $(BIN) ./cmd/...

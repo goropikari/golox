@@ -1,4 +1,4 @@
-package mylang
+package tlps
 
 import "fmt"
 

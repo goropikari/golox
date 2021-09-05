@@ -11,14 +11,14 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/goropikari/mylang"
+	"github.com/goropikari/tlps"
 )
 
 func main() {
-	runtime := mylang.NewRuntime()
+	runtime := tlps.NewRuntime()
 
 	if len(os.Args) > 2 {
-		fmt.Println("Usage: mylang [script]")
+		fmt.Println("Usage: tlps [script]")
 		os.Exit(64)
 	} else if len(os.Args) == 2 {
 		runFile(os.Args[1], runtime)
@@ -27,7 +27,7 @@ func main() {
 	}
 }
 
-func runFile(filepath string, r *mylang.Runtime) {
+func runFile(filepath string, r *tlps.Runtime) {
 	source, err := ioutil.ReadFile(filepath)
 	if err != nil {
 		log.Fatal(err)
@@ -41,7 +41,7 @@ func runFile(filepath string, r *mylang.Runtime) {
 	}
 }
 
-func runPrompt(r *mylang.Runtime) {
+func runPrompt(r *tlps.Runtime) {
 	stdin := bufio.NewReader(os.Stdin)
 	buf := &bytes.Buffer{}
 

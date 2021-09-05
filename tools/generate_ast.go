@@ -30,7 +30,7 @@ func defineAst(outputDir string, baseName string, types []string) error {
 	}
 	writer := bufio.NewWriter(file)
 	defer writer.Flush()
-	writer.WriteString("package mylang\n")
+	writer.WriteString("package tlps\n")
 
 	writer.WriteString("type " + baseName + " interface {")
 	writer.WriteString("Accept(Visitor) interface{}\n")

@@ -1,8 +1,8 @@
-module github.com/goropikari/mylang
+module github.com/goropikari/tlps
 
 go 1.17
 
-replace github.com/goropikari/mylang/collections/stack => ./collections/stack
+replace github.com/goropikari/tlps/collections/stack => ./collections/stack
 
 require github.com/stretchr/testify v1.7.0
 

@@ -1,11 +1,11 @@
-package mylang
+package tlps
 
 import (
 	"bytes"
 	"strconv"
 	"unicode"
 
-	"github.com/goropikari/mylang/collections/stack"
+	"github.com/goropikari/tlps/collections/stack"
 )
 
 // Scanner is struct of Scanner

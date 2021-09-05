@@ -1,17 +1,17 @@
-package mylang_test
+package tlps_test
 
 import (
 	"fmt"
 	"testing"
 
-	"github.com/goropikari/mylang"
+	"github.com/goropikari/tlps"
 )
 
 func TestAstPrinter(t *testing.T) {
-	expression := mylang.NewBinary(
-		mylang.NewUnary(mylang.NewToken(mylang.Minus, "-", nil, 1), mylang.NewLiteral(123)),
-		mylang.NewToken(mylang.Star, "*", nil, 1),
-		mylang.NewGrouping(mylang.NewLiteral(45.67)),
+	expression := tlps.NewBinary(
+		tlps.NewUnary(tlps.NewToken(tlps.Minus, "-", nil, 1), tlps.NewLiteral(123)),
+		tlps.NewToken(tlps.Star, "*", nil, 1),
+		tlps.NewGrouping(tlps.NewLiteral(45.67)),
 	)
-	fmt.Println(mylang.NewAstPrinter().Print(expression))
+	fmt.Println(tlps.NewAstPrinter().Print(expression))
 }

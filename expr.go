@@ -1,4 +1,4 @@
-package mylang
+package tlps
 
 type Expr interface {
 	Accept(Visitor) interface{}
