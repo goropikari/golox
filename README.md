@@ -39,7 +39,7 @@ for var i = 0; i < 5; i = i + 1:
 # Todo
 
 - [ ] add tests
-- [ ] escape string
+- [x] escape sequence
 - [ ] detect IndentationError
 - [ ] import another tlps file
 - [ ] support IO

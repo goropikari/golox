@@ -214,6 +214,7 @@ func (s *Scanner) match(expected rune) bool {
 func (s *Scanner) advance() (rune, int, error) {
 	r, size, err := s.source.ReadRune()
 	s.current++
+
 	return r, size, err
 }
 
@@ -268,9 +269,15 @@ func (s *Scanner) addBlock() {
 }
 
 func (s *Scanner) addString() {
-	for s.peek() != '"' && !s.isAtEnd() {
-		if s.match('\n') {
+	isEscape := false // define isEscape to handle \"
+	for (isEscape || s.peek() != '"') && !s.isAtEnd() {
+		if s.peek() == '\n' {
 			s.line++
+		}
+		if s.peek() == '\\' {
+			isEscape = !isEscape
+		} else {
+			isEscape = false
 		}
 		s.advance()
 	}
@@ -283,8 +290,9 @@ func (s *Scanner) addString() {
 	// The closing "
 	s.advance()
 
-	value := string(s.sourceRunes[s.start+1 : s.current-1])
-	s.addToken(String, value)
+	// value := string(s.sourceRunes[s.start+1 : s.current-1])
+	value := s.handleEscapeCharacter()
+	s.addToken(String, string(value))
 }
 
 func (s *Scanner) addNumber() {
@@ -341,4 +349,51 @@ func (s *Scanner) peekNext() rune {
 		return 0
 	}
 	return s.sourceRunes[s.current+1]
+}
+
+func (s *Scanner) handleEscapeCharacter() string {
+	runes := s.sourceRunes[s.start+1 : s.current-1]
+	value := make([]rune, 0)
+	var prevc rune
+	for _, v := range runes {
+		var c rune
+		if prevc == '\\' {
+			// https://en.wikipedia.org/wiki/C_syntax#Backslash_escapes
+			switch v {
+			case '\\':
+				c = v
+			case '"':
+				c = v
+			case 'n':
+				c = '\n'
+			case 'r':
+				c = '\r'
+			case 'b':
+				c = '\b'
+			case 't':
+				c = '\t'
+			case 'f':
+				c = '\f'
+			case 'v':
+				c = '\v'
+			default:
+				s.runtime.ErrorMessage(s.line, "invalid escape sequence")
+				return ""
+			}
+
+			if v == '\\' {
+				prevc = 0
+			} else {
+				prevc = v
+			}
+			value = append(value, c)
+		} else if v == '\\' {
+			prevc = v
+		} else {
+			prevc = v
+			value = append(value, v)
+		}
+	}
+
+	return string(value)
 }
