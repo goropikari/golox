@@ -12,7 +12,7 @@ import (
 type Scanner struct {
 	keywords    map[string]TokenType
 	stack_      *stack.Stack
-	isFirst     bool
+	isFirst     bool // use when count indentation level
 	runtime     *Runtime
 	source      *bytes.Buffer
 	sourceRunes []rune
@@ -67,6 +67,7 @@ func (s *Scanner) ScanTokens() TokenList {
 		s.addBlock()
 		s.start = s.current
 		s.scanToken()
+		s.removeUselessNewline()
 	}
 
 	for s.stack_.Top() != 0 {
@@ -80,6 +81,7 @@ func (s *Scanner) ScanTokens() TokenList {
 
 func (s *Scanner) scanToken() {
 	c, _, _ := s.advance()
+
 	switch c {
 	case '(':
 		s.addToken(LeftParen, nil)
@@ -152,9 +154,6 @@ func (s *Scanner) scanToken() {
 			for s.peek() != '\n' && !s.isAtEnd() {
 				s.advance()
 			}
-			if s.match('\n') {
-				s.line++
-			}
 		} else {
 			s.addToken(Slash, nil)
 		}
@@ -165,12 +164,6 @@ func (s *Scanner) scanToken() {
 		break
 	case '\n':
 		s.addNewline()
-		s.line++
-		s.isFirst = true
-		for s.peek() == '\n' && !s.isAtEnd() {
-			s.line++
-			s.advance()
-		}
 		break
 	case '"':
 		s.addString()
@@ -185,7 +178,24 @@ func (s *Scanner) scanToken() {
 		}
 		break
 	}
+}
 
+func (s *Scanner) removeUselessNewline() {
+	tokens := make([]*Token, 0)
+	isPreviousNewline := true
+	for _, token := range s.tokens {
+		if token.Type == Newline {
+			if !isPreviousNewline {
+				tokens = append(tokens, token)
+			}
+			isPreviousNewline = true
+		} else {
+			isPreviousNewline = false
+			tokens = append(tokens, token)
+		}
+	}
+
+	s.tokens = tokens
 }
 
 func (s *Scanner) match(expected rune) bool {
@@ -214,8 +224,9 @@ func (s *Scanner) addToken(tt TokenType, literal interface{}) {
 }
 
 func (s *Scanner) addNewline() {
-	s.isFirst = true
 	s.tokens = append(s.tokens, NewToken(Newline, "\\n", nil, s.line))
+	s.line++
+	s.isFirst = true
 }
 
 func (s *Scanner) addBlock() {
