@@ -86,7 +86,7 @@ func canContinueRead(line string) bool {
 		return true
 	}
 
-	blocks := []string{"def", "class", "if", "elseif", "else", "fun", "while"}
+	blocks := []string{"class", "def", "else", "elseif", "for", "fun", "if", "while"}
 	for _, v := range blocks {
 		if strings.HasPrefix(line, v) {
 			return true
