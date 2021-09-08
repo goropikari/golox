@@ -3,6 +3,7 @@ package tlps
 import (
 	"bytes"
 	"fmt"
+	"strings"
 )
 
 type AstPrinter struct{}
@@ -17,11 +18,11 @@ func (ap *AstPrinter) Print(stmts []Stmt) (string, error) {
 }
 
 func (ap *AstPrinter) visitBinaryExpr(expr *Binary) (interface{}, error) {
-	return ap.parenthesize(expr.Operator.Lexeme, expr.Left, expr.Right)
+	return ap.parenthesizeExpr(expr.Operator.Lexeme, expr.Left, expr.Right)
 }
 
 func (ap *AstPrinter) visitGroupingExpr(expr *Grouping) (interface{}, error) {
-	return ap.parenthesize("group", expr.Expression)
+	return ap.parenthesizeExpr("group", expr.Expression)
 }
 
 func (ap *AstPrinter) visitLiteralExpr(expr *Literal) (interface{}, error) {
@@ -32,23 +33,31 @@ func (ap *AstPrinter) visitLiteralExpr(expr *Literal) (interface{}, error) {
 }
 
 func (ap *AstPrinter) visitLogicalExpr(expr *Logical) (interface{}, error) {
-	return nil, nil
+	return ap.parenthesizeExpr(expr.Operator.Lexeme, expr.Left, expr.Right)
 }
 
 func (ap *AstPrinter) visitUnaryExpr(expr *Unary) (interface{}, error) {
-	return ap.parenthesize(expr.Operator.Lexeme, expr.Right)
+	return ap.parenthesizeExpr(expr.Operator.Lexeme, expr.Right)
 }
 
 func (ap *AstPrinter) visitAssignExpr(expr *Assign) (interface{}, error) {
-	return nil, nil
+	return ap.parenthesizeExpr("assign "+expr.Name.Lexeme, expr.Value)
 }
 
 func (ap *AstPrinter) visitVariableExpr(expr *Variable) (interface{}, error) {
-	return nil, nil
+	return ap.parenthesizeExpr("variable", NewLiteral(expr.Name.Lexeme))
 }
 
 func (ap *AstPrinter) visitBlockStmt(b *Block) (interface{}, error) {
-	return nil, nil
+	body := make([]string, 0)
+	for _, stmt := range b.Statements {
+		s, err := ap.parenthesizeStmt("block body", stmt)
+		if err != nil {
+			return "", err
+		}
+		body = append(body, s)
+	}
+	return "(block " + strings.Join(body, " ") + ")", nil
 }
 
 func (ap *AstPrinter) visitExpressionStmt(e *Expression) (interface{}, error) {
@@ -56,27 +65,68 @@ func (ap *AstPrinter) visitExpressionStmt(e *Expression) (interface{}, error) {
 }
 
 func (ap *AstPrinter) visitIf_Stmt(i *If_) (interface{}, error) {
-	return nil, nil
+	cond, err := ap.parenthesizeExpr("cond", i.Condition)
+	if err != nil {
+		return "", nil
+	}
+	thenBranch, err := ap.parenthesizeStmt("thenBranch", i.ThenBranch)
+	if err != nil {
+		return "", nil
+	}
+	var elseBranch string
+	if i.ElseBranch != nil {
+		elseBranch, err = ap.parenthesizeStmt("elseBranch", i.ElseBranch)
+		if err != nil {
+			return "", err
+		}
+	}
+
+	return "(if " + cond + " " + thenBranch + " " + elseBranch + ")", nil
 }
 
 func (ap *AstPrinter) visitPrint_Stmt(p *Print_) (interface{}, error) {
-	return nil, nil
+	return ap.parenthesizeExpr("print", p.Expression)
 }
 
 func (ap *AstPrinter) visitWhile_Stmt(p *While_) (interface{}, error) {
-	return nil, nil
+	cond, err := ap.parenthesizeExpr("cond", p.Condition)
+	if err != nil {
+		return "", err
+	}
+	body, err := ap.parenthesizeStmt("body", p.Body)
+	if err != nil {
+		return "", nil
+	}
+	return "(while " + cond + " " + body + ")", nil
 }
 
 func (ap *AstPrinter) visitVar_Stmt(v *Var_) (interface{}, error) {
-	return nil, nil
+	initializer, err := ap.parenthesizeExpr("init", v.Initializer)
+	if err != nil {
+		return "", nil
+	}
+	return "(declare " + v.Name.Lexeme + " " + initializer + ")", nil
 }
 
-func (ap *AstPrinter) parenthesize(name string, exprs ...Expr) (string, error) {
+func (ap *AstPrinter) parenthesizeExpr(name string, exprs ...Expr) (string, error) {
 	buf := bytes.Buffer{}
 	buf.WriteString("(" + name)
 	for _, expr := range exprs {
 		buf.WriteString(" ")
 		s, _ := expr.Accept(ap)
+		buf.WriteString(s.(string))
+	}
+	buf.WriteString(")")
+
+	return buf.String(), nil
+}
+
+func (ap *AstPrinter) parenthesizeStmt(name string, stmts ...Stmt) (string, error) {
+	buf := bytes.Buffer{}
+	buf.WriteString("(" + name)
+	for _, stmt := range stmts {
+		buf.WriteString(" ")
+		s, _ := stmt.Accept(ap)
 		buf.WriteString(s.(string))
 	}
 	buf.WriteString(")")

@@ -73,10 +73,21 @@ func TestScanner(t *testing.T) {
 			expected: tlps.TokenList{
 				tlps.NewToken(tlps.Identifier, "x", nil, 1),
 				tlps.NewToken(tlps.Equal, "=", nil, 1),
-				tlps.NewToken(tlps.String, "\"hoge こんにちは piyo\"", "hoge こんにちは piyo", 1),
+				tlps.NewToken(tlps.String, "\"hoge こんにちは\\\" piyo\"", "hoge こんにちは\" piyo", 1),
 				tlps.NewToken(tlps.EOF, "", nil, 1),
 			},
-			code: "x = \"hoge こんにちは piyo\"",
+			code: "x = \"hoge こんにちは\\\" piyo\"",
+		},
+		{
+			name: "useless newline",
+			expected: tlps.TokenList{
+				tlps.NewToken(tlps.String, "\"hoge\"", "hoge", 3),
+				tlps.NewToken(tlps.Newline, "\\n", nil, 3),
+				tlps.NewToken(tlps.Identifier, "piyo", nil, 5),
+				tlps.NewToken(tlps.Newline, "\\n", nil, 5),
+				tlps.NewToken(tlps.EOF, "", nil, 7),
+			},
+			code: "\n\n\"hoge\"\n\npiyo // hogehoge\n// piyopiyo\n   // fugafuga",
 		},
 	}
 	for _, tt := range tests {
