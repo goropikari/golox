@@ -35,6 +35,9 @@ func (p *Parser) expression() (Expr, error) {
 }
 
 func (p *Parser) declaration() (Stmt, error) {
+	if p.match(Fun) {
+		return p.function("function")
+	}
 	if p.match(Var) {
 		stmt, err := p.varDecralation()
 		if err != nil {
@@ -59,6 +62,9 @@ func (p *Parser) statement() (Stmt, error) {
 	}
 	if p.match(Print) {
 		return p.printStatement()
+	}
+	if p.match(Return) {
+		return p.returnStatement()
 	}
 	if p.match(While) {
 		return p.whileStatement()
@@ -100,7 +106,10 @@ func (p *Parser) forStatement() (Stmt, error) {
 		}
 		condition = cond
 	}
-	p.consume(Semicolon, "Expect ';' after loop condition")
+	_, err := p.consume(Semicolon, "Expect ';' after loop condition")
+	if err != nil {
+		return nil, err
+	}
 
 	var increment Expr
 	if !p.check(Colon) {
@@ -110,8 +119,14 @@ func (p *Parser) forStatement() (Stmt, error) {
 		}
 		increment = inc
 	}
-	p.consume(Colon, "Expect ':' after for clauses.")
-	p.consume(Newline, "Expect '\\n' after for clauses.")
+	_, err = p.consume(Colon, "Expect ':' after for clauses.")
+	if err != nil {
+		return nil, err
+	}
+	_, err = p.consume(Newline, "Expect '\\n' after for clauses.")
+	if err != nil {
+		return nil, err
+	}
 
 	body, err := p.statement()
 	if err != nil {
@@ -139,8 +154,15 @@ func (p *Parser) ifStatement() (Stmt, error) {
 	if err != nil {
 		return nil, err
 	}
-	p.consume(Colon, "Expect ':' after if condition.")
-	p.consume(Newline, "Expect '\\n' after if condition")
+	_, err = p.consume(Colon, "Expect ':' after if condition.")
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = p.consume(Newline, "Expect '\\n' after if condition")
+	if err != nil {
+		return nil, err
+	}
 
 	thenBranch, err := p.statement()
 	if err != nil {
@@ -155,8 +177,14 @@ func (p *Parser) ifStatement() (Stmt, error) {
 		}
 	}
 	if p.match(Else) {
-		p.consume(Colon, "Expect ':' after else.")
-		p.consume(Newline, "Expect '\\n' after else")
+		_, err := p.consume(Colon, "Expect ':' after else.")
+		if err != nil {
+			return nil, err
+		}
+		_, err = p.consume(Newline, "Expect '\\n' after else")
+		if err != nil {
+			return nil, err
+		}
 		elseBranch, err = p.statement()
 		if err != nil {
 			return nil, err
@@ -171,7 +199,6 @@ func (p *Parser) printStatement() (Stmt, error) {
 	if err != nil {
 		return nil, err
 	}
-	// _, err = p.consume(Semicolon, "Expect ';' after value.")
 	_, err = p.consumeTerm()
 	if err != nil {
 		return nil, err
@@ -180,13 +207,37 @@ func (p *Parser) printStatement() (Stmt, error) {
 	return NewPrint_(value), nil
 }
 
+func (p *Parser) returnStatement() (Stmt, error) {
+	keyword := p.previous()
+	var value Expr = nil
+	if !p.check(Semicolon) {
+		var err error
+		value, err = p.expression()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	_, err := p.consumeTerm()
+	if err != nil {
+		return nil, err
+	}
+	return NewReturn_(keyword, value), nil
+}
+
 func (p *Parser) whileStatement() (Stmt, error) {
 	condition, err := p.expression()
 	if err != nil {
 		return nil, err
 	}
-	p.consume(Colon, "Expect ':' after condition")
-	p.consume(Newline, "Expect '\\n' after condition")
+	_, err = p.consume(Colon, "Expect ':' after condition")
+	if err != nil {
+		return nil, err
+	}
+	_, err = p.consume(Newline, "Expect '\\n' after condition")
+	if err != nil {
+		return nil, err
+	}
 	body, err := p.statement()
 	if err != nil {
 		return nil, err
@@ -231,6 +282,60 @@ func (p *Parser) expressionStatement() (Stmt, error) {
 	}
 
 	return NewExpression(expr), nil
+}
+
+func (p *Parser) function(kind string) (Stmt, error) {
+	name, err := p.consume(Identifier, "Expect "+kind+" name.")
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = p.consume(LeftParen, "Expect '(' after "+kind+" name.")
+	if err != nil {
+		return nil, err
+	}
+	parameters := make([]*Token, 0)
+
+	if !p.check(RightParen) {
+		for {
+			if len(parameters) >= 255 {
+				return nil, p.NewParseError(p.peek(), "Can't have more than 255 parameters.")
+			}
+
+			token, err := p.consume(Identifier, "Expect parameter name.")
+			if err != nil {
+				return nil, err
+			}
+			parameters = append(parameters, token)
+
+			if !p.match(Comma) {
+				break
+			}
+		}
+	}
+
+	_, err = p.consume(RightParen, "Expect ')' after parameters.")
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = p.consume(Colon, "Expect ':' after '('")
+	if err != nil {
+		return nil, err
+	}
+	_, err = p.consume(Newline, "Expect '\\n' before "+kind+" body.")
+	if err != nil {
+		return nil, err
+	}
+	_, err = p.consume(LeftBrace, "Expected an indented block as "+kind+" body.")
+	if err != nil {
+		return nil, err
+	}
+	body, err := p.block()
+	if err != nil {
+		return nil, err
+	}
+	return NewFunction(name, parameters, body), nil
 }
 
 func (p *Parser) block() ([]Stmt, error) {
@@ -390,7 +495,56 @@ func (p *Parser) unary() (Expr, error) {
 		return NewUnary(operator, right), nil
 	}
 
-	return p.primary()
+	return p.call()
+}
+
+func (p *Parser) call() (Expr, error) {
+	expr, err := p.primary()
+	if err != nil {
+		return nil, err
+	}
+
+	for {
+		if p.match(LeftParen) {
+			expr, err = p.finishCall(expr)
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			break
+		}
+	}
+
+	return expr, nil
+}
+
+func (p *Parser) finishCall(callee Expr) (Expr, error) {
+	arguments := make([]Expr, 0)
+	if !p.check(RightParen) {
+		for {
+			expr, err := p.expression()
+			if err != nil {
+				return nil, err
+			}
+
+			if len(arguments) >= 255 {
+				return nil, p.NewParseError(p.peek(), "Can't have more than 255 arguments.")
+			}
+
+			arguments = append(arguments, expr)
+
+			if !p.match(Comma) {
+				break
+			}
+		}
+	}
+
+	paren, err := p.consume(RightParen, "Expect ')' after arguments.")
+	if err != nil {
+		return nil, err
+	}
+
+	return NewCall(callee, paren, arguments), nil
 }
 
 func (p *Parser) primary() (Expr, error) {
@@ -499,6 +653,7 @@ func (p *Parser) synchronize() {
 	for !p.isAtEnd() {
 		switch p.previous().Type {
 		case Semicolon:
+			return
 		case Newline:
 			return
 		}
@@ -508,12 +663,19 @@ func (p *Parser) synchronize() {
 
 		switch p.peek().Type {
 		case Class:
+			return
 		case Fun:
+			return
 		case Var:
+			return
 		case For:
+			return
 		case If:
+			return
 		case While:
+			return
 		case Print:
+			return
 		case Return:
 			return
 		}

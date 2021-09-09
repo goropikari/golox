@@ -167,15 +167,57 @@ func TestParser(t *testing.T) {
 				tlps.NewToken(tlps.EOF, "", nil, 2),
 			},
 		},
+		{
+			name: "function",
+			expected: []tlps.Stmt{
+				// fun f(x, y):
+				//   return x + y
+				tlps.NewFunction(
+					tlps.NewToken(tlps.Identifier, "f", nil, 1),
+					[]*tlps.Token{
+						tlps.NewToken(tlps.Identifier, "x", nil, 1),
+						tlps.NewToken(tlps.Identifier, "y", nil, 1),
+					},
+					[]tlps.Stmt{
+						tlps.NewReturn_(
+							tlps.NewToken(tlps.Return, "return", nil, 2),
+							tlps.NewBinary(
+								tlps.NewVariable(tlps.NewToken(tlps.Identifier, "x", nil, 2)),
+								tlps.NewToken(tlps.Plus, "+", nil, 2),
+								tlps.NewVariable(tlps.NewToken(tlps.Identifier, "y", nil, 2)),
+							),
+						),
+					},
+				),
+			},
+			given: []*tlps.Token{
+				tlps.NewToken(tlps.Fun, "fun", nil, 1),
+				tlps.NewToken(tlps.Identifier, "f", nil, 1),
+				tlps.NewToken(tlps.LeftParen, "(", nil, 1),
+				tlps.NewToken(tlps.Identifier, "x", nil, 1),
+				tlps.NewToken(tlps.Comma, ",", nil, 1),
+				tlps.NewToken(tlps.Identifier, "y", nil, 1),
+				tlps.NewToken(tlps.RightParen, ")", nil, 1),
+				tlps.NewToken(tlps.Colon, ":", nil, 1),
+				tlps.NewToken(tlps.Newline, "\\n", nil, 1),
+				tlps.NewToken(tlps.LeftBrace, "{", nil, 2),
+				tlps.NewToken(tlps.Return, "return", nil, 2),
+				tlps.NewToken(tlps.Identifier, "x", nil, 2),
+				tlps.NewToken(tlps.Plus, "+", nil, 2),
+				tlps.NewToken(tlps.Identifier, "y", nil, 2),
+				tlps.NewToken(tlps.Newline, "\\n", nil, 2),
+				tlps.NewToken(tlps.RightBrace, "}", nil, 2),
+				tlps.NewToken(tlps.EOF, "", nil, 2),
+			},
+		},
 	}
-
-	// ast := tlps.NewAstPrinter()
 
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			parser := tlps.NewParser(r, tt.given)
 			actual, _ := parser.Parse()
+			// ast := tlps.NewAstPrinter()
 			// fmt.Println(ast.Print(actual))
 			// fmt.Println(ast.Print(tt.expected))
 			assert.Equal(t, tt.expected, actual)

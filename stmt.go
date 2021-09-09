@@ -8,8 +8,10 @@ type Stmt interface {
 type VisitorStmt interface {
 	visitBlockStmt(*Block) (interface{}, error)
 	visitExpressionStmt(*Expression) (interface{}, error)
+	visitFunctionStmt(*Function) (interface{}, error)
 	visitIf_Stmt(*If_) (interface{}, error)
 	visitPrint_Stmt(*Print_) (interface{}, error)
+	visitReturn_Stmt(*Return_) (interface{}, error)
 	visitVar_Stmt(*Var_) (interface{}, error)
 	visitWhile_Stmt(*While_) (interface{}, error)
 }
@@ -54,6 +56,28 @@ func (rec *Expression) IsType(v interface{}) bool {
 	return false
 }
 
+type Function struct {
+	Name   *Token
+	Params []*Token
+	Body   []Stmt
+}
+
+func NewFunction(name *Token, params []*Token, body []Stmt) Stmt {
+	return &Function{name, params, body}
+}
+
+func (f *Function) Accept(visitor VisitorStmt) (interface{}, error) {
+	return visitor.visitFunctionStmt(f)
+}
+
+func (rec *Function) IsType(v interface{}) bool {
+	switch v.(type) {
+	case *Function:
+		return true
+	}
+	return false
+}
+
 type If_ struct {
 	Condition  Expr
 	ThenBranch Stmt
@@ -91,6 +115,27 @@ func (p *Print_) Accept(visitor VisitorStmt) (interface{}, error) {
 func (rec *Print_) IsType(v interface{}) bool {
 	switch v.(type) {
 	case *Print_:
+		return true
+	}
+	return false
+}
+
+type Return_ struct {
+	Keyword *Token
+	Value   Expr
+}
+
+func NewReturn_(keyword *Token, value Expr) Stmt {
+	return &Return_{keyword, value}
+}
+
+func (r *Return_) Accept(visitor VisitorStmt) (interface{}, error) {
+	return visitor.visitReturn_Stmt(r)
+}
+
+func (rec *Return_) IsType(v interface{}) bool {
+	switch v.(type) {
+	case *Return_:
 		return true
 	}
 	return false

@@ -10,15 +10,19 @@ import (
 type Runtime struct {
 	HadError        bool
 	HadRuntimeError bool
+	Globals         *Environment
 	Environment     *Environment
 }
 
 // NewRuntime is constructor of Runtime
 func NewRuntime() *Runtime {
+	globals := NewEnvironment(nil)
+	environment := globals
 	return &Runtime{
 		HadError:        false,
 		HadRuntimeError: false,
-		Environment:     NewEnvironment(nil),
+		Globals:         globals,
+		Environment:     environment,
 	}
 }
 

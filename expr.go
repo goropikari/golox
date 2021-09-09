@@ -8,6 +8,7 @@ type Expr interface {
 type VisitorExpr interface {
 	visitAssignExpr(*Assign) (interface{}, error)
 	visitBinaryExpr(*Binary) (interface{}, error)
+	visitCallExpr(*Call) (interface{}, error)
 	visitGroupingExpr(*Grouping) (interface{}, error)
 	visitLiteralExpr(*Literal) (interface{}, error)
 	visitLogicalExpr(*Logical) (interface{}, error)
@@ -53,6 +54,28 @@ func (b *Binary) Accept(visitor VisitorExpr) (interface{}, error) {
 func (rec *Binary) IsType(v interface{}) bool {
 	switch v.(type) {
 	case *Binary:
+		return true
+	}
+	return false
+}
+
+type Call struct {
+	Callee    Expr
+	Paren     *Token
+	Arguments []Expr
+}
+
+func NewCall(callee Expr, paren *Token, arguments []Expr) Expr {
+	return &Call{callee, paren, arguments}
+}
+
+func (c *Call) Accept(visitor VisitorExpr) (interface{}, error) {
+	return visitor.visitCallExpr(c)
+}
+
+func (rec *Call) IsType(v interface{}) bool {
+	switch v.(type) {
+	case *Call:
 		return true
 	}
 	return false

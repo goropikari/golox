@@ -20,7 +20,9 @@ func TestAstPrinter(t *testing.T) {
 			expected: "(* (- 123) (group 45.67))",
 			given: []tlps.Stmt{
 				tlps.NewExpression(tlps.NewBinary(
-					tlps.NewUnary(tlps.NewToken(tlps.Minus, "-", nil, 1), tlps.NewLiteral(123)),
+					tlps.NewUnary(
+						tlps.NewToken(tlps.Minus, "-", nil, 1), tlps.NewLiteral(123),
+					),
 					tlps.NewToken(tlps.Star, "*", nil, 1),
 					tlps.NewGrouping(tlps.NewLiteral(45.67))),
 				),
@@ -31,7 +33,9 @@ func TestAstPrinter(t *testing.T) {
 			expected: "(and (- 123) (group 45.67))",
 			given: []tlps.Stmt{
 				tlps.NewExpression(tlps.NewLogical(
-					tlps.NewUnary(tlps.NewToken(tlps.Minus, "-", nil, 1), tlps.NewLiteral(123)),
+					tlps.NewUnary(
+						tlps.NewToken(tlps.Minus, "-", nil, 1), tlps.NewLiteral(123),
+					),
 					tlps.NewToken(tlps.And, "and", nil, 1),
 					tlps.NewGrouping(tlps.NewLiteral(45.67))),
 				),
@@ -62,8 +66,16 @@ func TestAstPrinter(t *testing.T) {
 			given: []tlps.Stmt{
 				tlps.NewIf_(
 					tlps.NewLiteral(true),
-					tlps.NewExpression(tlps.NewVariable(tlps.NewToken(tlps.Identifier, "x", nil, 1))),
-					tlps.NewExpression(tlps.NewVariable(tlps.NewToken(tlps.Identifier, "y", nil, 1))),
+					tlps.NewExpression(
+						tlps.NewVariable(
+							tlps.NewToken(tlps.Identifier, "x", nil, 1),
+						),
+					),
+					tlps.NewExpression(
+						tlps.NewVariable(
+							tlps.NewToken(tlps.Identifier, "y", nil, 1),
+						),
+					),
 				),
 			},
 		},
@@ -103,6 +115,23 @@ func TestAstPrinter(t *testing.T) {
 							tlps.NewLiteral(123)),
 						tlps.NewExpression(
 							tlps.NewLiteral(987)),
+					},
+				),
+			},
+		},
+		{
+			name:     "function",
+			expected: "(function (args (x, y)) (body (1) (2)))",
+			given: []tlps.Stmt{
+				tlps.NewFunction(
+					tlps.NewToken(tlps.Identifier, "f", nil, 1),
+					[]*tlps.Token{
+						tlps.NewToken(tlps.Identifier, "x", nil, 1),
+						tlps.NewToken(tlps.Identifier, "y", nil, 1),
+					},
+					[]tlps.Stmt{
+						tlps.NewExpression(tlps.NewLiteral(1)),
+						tlps.NewExpression(tlps.NewLiteral(2)),
 					},
 				),
 			},

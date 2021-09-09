@@ -43,6 +43,42 @@ func TestInterpreter(t *testing.T) {
 				tlps.NewExpression(tlps.NewBinary(tlps.NewLiteral("foo "), tlps.NewToken(tlps.Plus, "+", nil, 1), tlps.NewLiteral("bar"))),
 			},
 		},
+		{
+			name:     "function",
+			expected: "13",
+			given: []tlps.Stmt{
+				// fun f(x, y):
+				//   return x + y
+				// f(11, 2)
+				tlps.NewFunction(
+					tlps.NewToken(tlps.Identifier, "f", nil, 1),
+					[]*tlps.Token{
+						tlps.NewToken(tlps.Identifier, "x", nil, 1),
+						tlps.NewToken(tlps.Identifier, "y", nil, 1),
+					},
+					[]tlps.Stmt{
+						tlps.NewReturn_(
+							tlps.NewToken(tlps.Return, "return", nil, 2),
+							tlps.NewBinary(
+								tlps.NewVariable(tlps.NewToken(tlps.Identifier, "x", nil, 2)),
+								tlps.NewToken(tlps.Plus, "+", nil, 1),
+								tlps.NewVariable(tlps.NewToken(tlps.Identifier, "y", nil, 2)),
+							),
+						),
+					},
+				),
+				tlps.NewExpression(
+					tlps.NewCall(
+						tlps.NewVariable(tlps.NewToken(tlps.Identifier, "f", nil, 3)),
+						tlps.NewToken(tlps.LeftParen, "(", nil, 3),
+						[]tlps.Expr{
+							tlps.NewLiteral(float64(11)),
+							tlps.NewLiteral(float64(2)),
+						},
+					),
+				),
+			},
+		},
 	}
 
 	for _, tt := range tests {

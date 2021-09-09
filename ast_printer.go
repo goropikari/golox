@@ -21,6 +21,10 @@ func (ap *AstPrinter) visitBinaryExpr(expr *Binary) (interface{}, error) {
 	return ap.parenthesizeExpr(expr.Operator.Lexeme, expr.Left, expr.Right)
 }
 
+func (ap *AstPrinter) visitCallExpr(expr *Call) (interface{}, error) {
+	return nil, nil
+}
+
 func (ap *AstPrinter) visitGroupingExpr(expr *Grouping) (interface{}, error) {
 	return ap.parenthesizeExpr("group", expr.Expression)
 }
@@ -64,6 +68,23 @@ func (ap *AstPrinter) visitExpressionStmt(e *Expression) (interface{}, error) {
 	return e.Expression.Accept(ap)
 }
 
+func (ap *AstPrinter) visitFunctionStmt(f *Function) (interface{}, error) {
+	params := make([]string, 0)
+	for _, v := range f.Params {
+		params = append(params, v.Lexeme)
+	}
+	stmts := make([]string, 0)
+	for _, stmt := range f.Body {
+		s, err := stmt.Accept(ap)
+		if err != nil {
+			return nil, err
+		}
+		stmts = append(stmts, "("+s.(string)+")")
+	}
+
+	return "(function (args (" + strings.Join(params, ", ") + ")) (body " + strings.Join(stmts, " ") + "))", nil
+}
+
 func (ap *AstPrinter) visitIf_Stmt(i *If_) (interface{}, error) {
 	cond, err := ap.parenthesizeExpr("cond", i.Condition)
 	if err != nil {
@@ -86,6 +107,15 @@ func (ap *AstPrinter) visitIf_Stmt(i *If_) (interface{}, error) {
 
 func (ap *AstPrinter) visitPrint_Stmt(p *Print_) (interface{}, error) {
 	return ap.parenthesizeExpr("print", p.Expression)
+}
+
+func (ap *AstPrinter) visitReturn_Stmt(r *Return_) (interface{}, error) {
+	expr, err := ap.parenthesizeExpr(r.Keyword.Lexeme, r.Value)
+	if err != nil {
+		return nil, err
+	}
+
+	return expr, nil
 }
 
 func (ap *AstPrinter) visitWhile_Stmt(p *While_) (interface{}, error) {
