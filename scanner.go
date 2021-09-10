@@ -4,14 +4,12 @@ import (
 	"bytes"
 	"strconv"
 	"unicode"
-
-	"github.com/goropikari/tlps/collections/stack"
 )
 
 // Scanner is struct of Scanner
 type Scanner struct {
 	keywords    map[string]TokenType
-	stack_      *stack.Stack
+	indent      *IndentStack
 	isFirst     bool // use when count indentation level
 	runtime     *Runtime
 	source      *bytes.Buffer
@@ -24,9 +22,6 @@ type Scanner struct {
 
 // NewScanner is constructor of Scanner
 func NewScanner(r *Runtime, b *bytes.Buffer) *Scanner {
-	st := stack.NewStack()
-	st.Push(0)
-
 	var keywords = map[string]TokenType{
 		"and":    AndTT,
 		"class":  ClassTT,
@@ -47,9 +42,12 @@ func NewScanner(r *Runtime, b *bytes.Buffer) *Scanner {
 		"while":  WhileTT,
 	}
 
+	indent := NewIndentStack()
+	indent.Push(0)
+
 	return &Scanner{
 		keywords:    keywords,
-		stack_:      st,
+		indent:      indent,
 		isFirst:     true,
 		runtime:     r,
 		source:      b,
@@ -70,8 +68,8 @@ func (s *Scanner) ScanTokens() TokenList {
 		s.removeUselessNewline()
 	}
 
-	for s.stack_.Top() != 0 {
-		s.stack_.Pop()
+	for s.indent.Peek() != 0 {
+		s.indent.Pop()
 		s.tokens = append(s.tokens, NewToken(RightBraceTT, "}", nil, s.line))
 	}
 
@@ -245,20 +243,20 @@ func (s *Scanner) addBlock() {
 		return
 	}
 
-	d := s.stack_.Top()
+	d := s.indent.Peek()
 	if d < depth {
-		s.stack_.Push(depth)
+		s.indent.Push(depth)
 		s.tokens = append(s.tokens, NewToken(LeftBraceTT, "{", nil, s.line))
 	} else if d > depth {
 		cnt := 0
-		for s.stack_.Pop() != -1 {
+		for s.indent.Pop() != -1 {
 			cnt++
-			if s.stack_.Top() == depth {
+			if s.indent.Peek() == depth {
 				break
 			}
 		}
 
-		if s.stack_.IsEmpty() {
+		if s.indent.IsEmpty() {
 			s.runtime.ErrorMessage(s.line, "unindent does not match any outer indentation level")
 		}
 

@@ -1,9 +1,11 @@
 package stack
 
+import "errors"
+
 // Stack is a stack data structure
 type Stack struct {
-	data   []int
-	length int
+	Data   []interface{}
+	Length int
 }
 
 // NewStack is constructor of Stack
@@ -12,37 +14,46 @@ func NewStack() *Stack {
 }
 
 // Push adds an item in stack
-func (s *Stack) Push(x int) {
-	s.data = append(s.data, x)
-	s.length++
+func (s *Stack) Push(x interface{}) {
+	s.Data = append(s.Data, x)
+	s.Length++
 }
 
 // Pop pops an item from stack
-func (s *Stack) Pop() int {
+func (s *Stack) Pop() interface{} {
 	if s.IsEmpty() {
 		return -1
 	}
 
-	item := s.Top()
-	s.length--
-	s.data = s.data[:s.length]
+	item := s.Peek()
+	s.Length--
+	s.Data = s.Data[:s.Length]
 	return item
 }
 
-// Top returns top item in stack, and don't modity the stack.
-func (s *Stack) Top() int {
+// Peek returns top item in stack, and don't modity the stack.
+func (s *Stack) Peek() interface{} {
 	if s.IsEmpty() {
 		return -1
 	}
-	return s.data[s.length-1]
+	return s.Data[s.Length-1]
 }
 
 // IsEmpty checks that stack is empty
 func (s *Stack) IsEmpty() bool {
-	return s.length == 0
+	return s.Length == 0
 }
 
 // Size returns stack size
 func (s *Stack) Size() int {
-	return s.length
+	return s.Length
+}
+
+// Get returns i th element of Stack from top
+func (s *Stack) Get(i int) (interface{}, error) {
+	if i < 0 || i >= s.Size() {
+		return nil, errors.New("BoundError")
+	}
+
+	return s.Data[s.Size()-1-i], nil
 }
