@@ -56,7 +56,7 @@ func (r *Runtime) ErrorMessage(line int, message string) {
 
 // ErrorTokenMessage prints error message at stderr
 func (r *Runtime) ErrorTokenMessage(token *Token, message string) {
-	if token.Type == EOF {
+	if token.Type == EOFTT {
 		r.report(token.Line, " at end", message)
 	} else {
 		r.report(token.Line, " at '"+token.Lexeme+"'", message)

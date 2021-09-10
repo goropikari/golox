@@ -19,28 +19,28 @@ func TestInterpreter(t *testing.T) {
 			name:     "1.3 + 1.2",
 			expected: "2.5",
 			given: []tlps.Stmt{
-				tlps.NewExpression(tlps.NewBinary(tlps.NewLiteral(1.3), tlps.NewToken(tlps.Plus, "+", nil, 1), tlps.NewLiteral(1.2))),
+				tlps.NewExpression(tlps.NewBinary(tlps.NewLiteral(1.3), tlps.NewToken(tlps.PlusTT, "+", nil, 1), tlps.NewLiteral(1.2))),
 			},
 		},
 		{
 			name:     "1.3 * 1.2",
 			expected: "1.56",
 			given: []tlps.Stmt{
-				tlps.NewExpression(tlps.NewBinary(tlps.NewLiteral(1.3), tlps.NewToken(tlps.Star, "*", nil, 1), tlps.NewLiteral(1.2))),
+				tlps.NewExpression(tlps.NewBinary(tlps.NewLiteral(1.3), tlps.NewToken(tlps.StarTT, "*", nil, 1), tlps.NewLiteral(1.2))),
 			},
 		},
 		{
 			name:     "2 / 4",
 			expected: "0.5",
 			given: []tlps.Stmt{
-				tlps.NewExpression(tlps.NewBinary(tlps.NewLiteral(2.0), tlps.NewToken(tlps.Slash, "/", nil, 1), tlps.NewLiteral(4.0))),
+				tlps.NewExpression(tlps.NewBinary(tlps.NewLiteral(2.0), tlps.NewToken(tlps.SlashTT, "/", nil, 1), tlps.NewLiteral(4.0))),
 			},
 		},
 		{
 			name:     "string + string",
 			expected: "foo bar",
 			given: []tlps.Stmt{
-				tlps.NewExpression(tlps.NewBinary(tlps.NewLiteral("foo "), tlps.NewToken(tlps.Plus, "+", nil, 1), tlps.NewLiteral("bar"))),
+				tlps.NewExpression(tlps.NewBinary(tlps.NewLiteral("foo "), tlps.NewToken(tlps.PlusTT, "+", nil, 1), tlps.NewLiteral("bar"))),
 			},
 		},
 		{
@@ -51,26 +51,26 @@ func TestInterpreter(t *testing.T) {
 				//   return x + y
 				// f(11, 2)
 				tlps.NewFunction(
-					tlps.NewToken(tlps.Identifier, "f", nil, 1),
+					tlps.NewToken(tlps.IdentifierTT, "f", nil, 1),
 					[]*tlps.Token{
-						tlps.NewToken(tlps.Identifier, "x", nil, 1),
-						tlps.NewToken(tlps.Identifier, "y", nil, 1),
+						tlps.NewToken(tlps.IdentifierTT, "x", nil, 1),
+						tlps.NewToken(tlps.IdentifierTT, "y", nil, 1),
 					},
 					[]tlps.Stmt{
 						tlps.NewReturn_(
-							tlps.NewToken(tlps.Return, "return", nil, 2),
+							tlps.NewToken(tlps.ReturnTT, "return", nil, 2),
 							tlps.NewBinary(
-								tlps.NewVariable(tlps.NewToken(tlps.Identifier, "x", nil, 2)),
-								tlps.NewToken(tlps.Plus, "+", nil, 1),
-								tlps.NewVariable(tlps.NewToken(tlps.Identifier, "y", nil, 2)),
+								tlps.NewVariable(tlps.NewToken(tlps.IdentifierTT, "x", nil, 2)),
+								tlps.NewToken(tlps.PlusTT, "+", nil, 1),
+								tlps.NewVariable(tlps.NewToken(tlps.IdentifierTT, "y", nil, 2)),
 							),
 						),
 					},
 				),
 				tlps.NewExpression(
 					tlps.NewCall(
-						tlps.NewVariable(tlps.NewToken(tlps.Identifier, "f", nil, 3)),
-						tlps.NewToken(tlps.LeftParen, "(", nil, 3),
+						tlps.NewVariable(tlps.NewToken(tlps.IdentifierTT, "f", nil, 3)),
+						tlps.NewToken(tlps.LeftParenTT, "(", nil, 3),
 						[]tlps.Expr{
 							tlps.NewLiteral(float64(11)),
 							tlps.NewLiteral(float64(2)),
@@ -93,7 +93,7 @@ func TestInterpreter(t *testing.T) {
 
 func TestInterpreter_Error(t *testing.T) {
 	r := tlps.NewRuntime()
-	plus := tlps.NewToken(tlps.Plus, "+", nil, 1)
+	plus := tlps.NewToken(tlps.PlusTT, "+", nil, 1)
 
 	var tests = []struct {
 		name     string

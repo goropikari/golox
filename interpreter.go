@@ -45,49 +45,49 @@ func (i *Interpreter) visitBinaryExpr(expr *Binary) (interface{}, error) {
 	}
 
 	switch expr.Operator.Type {
-	case Greater:
+	case GreaterTT:
 		err := checkNumberOperands(expr.Operator, left, right)
 		if err != nil {
 			return nil, err
 		}
 		return left.(float64) > right.(float64), nil
-	case GreaterEqual:
+	case GreaterEqualTT:
 		err := checkNumberOperands(expr.Operator, left, right)
 		if err != nil {
 			return nil, err
 		}
 		return left.(float64) >= right.(float64), nil
-	case Less:
+	case LessTT:
 		err := checkNumberOperands(expr.Operator, left, right)
 		if err != nil {
 			return nil, err
 		}
 		return left.(float64) < right.(float64), nil
-	case LessEqual:
+	case LessEqualTT:
 		err := checkNumberOperands(expr.Operator, left, right)
 		if err != nil {
 			return nil, err
 		}
 		return left.(float64) <= right.(float64), nil
-	case BangEqual:
+	case BangEqualTT:
 		err := checkNumberOperands(expr.Operator, left, right)
 		if err != nil {
 			return nil, err
 		}
 		return left.(float64) != right.(float64), nil
-	case EqualEqual:
+	case EqualEqualTT:
 		err := checkNumberOperands(expr.Operator, left, right)
 		if err != nil {
 			return nil, err
 		}
 		return left.(float64) == right.(float64), nil
-	case Minus:
+	case MinusTT:
 		err := checkNumberOperands(expr.Operator, left, right)
 		if err != nil {
 			return nil, err
 		}
 		return left.(float64) - right.(float64), nil
-	case Plus:
+	case PlusTT:
 		if isFloat64(left) && isFloat64(right) {
 			return left.(float64) + right.(float64), nil
 		}
@@ -96,13 +96,13 @@ func (i *Interpreter) visitBinaryExpr(expr *Binary) (interface{}, error) {
 		}
 
 		return nil, RuntimeError.New(expr.Operator, "Operands must be two numbers or two strings.")
-	case Slash:
+	case SlashTT:
 		err := checkNumberOperands(expr.Operator, left, right)
 		if err != nil {
 			return nil, err
 		}
 		return left.(float64) / right.(float64), nil
-	case Star:
+	case StarTT:
 		err := checkNumberOperands(expr.Operator, left, right)
 		if err != nil {
 			return nil, err
@@ -151,7 +151,7 @@ func (i *Interpreter) visitLogicalExpr(expr *Logical) (interface{}, error) {
 		return nil, err
 	}
 
-	if expr.Operator.Type == Or {
+	if expr.Operator.Type == OrTT {
 		if i.isTruthy(left) {
 			return left, nil
 		}
@@ -175,9 +175,9 @@ func (i *Interpreter) visitUnaryExpr(expr *Unary) (interface{}, error) {
 	}
 
 	switch expr.Operator.Type {
-	case Bang:
+	case BangTT:
 		return !i.isTruthy(right), nil
-	case Minus:
+	case MinusTT:
 		err := checkNumberOperand(expr.Operator, right)
 		if err != nil {
 			return nil, err

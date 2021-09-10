@@ -28,23 +28,23 @@ func NewScanner(r *Runtime, b *bytes.Buffer) *Scanner {
 	st.Push(0)
 
 	var keywords = map[string]TokenType{
-		"and":    And,
-		"class":  Class,
-		"else":   Else,
-		"elseif": Elseif,
-		"false":  False,
-		"for":    For,
-		"fun":    Fun,
-		"if":     If,
-		"nil":    Nil,
-		"or":     Or,
-		"print":  Print,
-		"return": Return,
-		"super":  Super,
-		"this":   This,
-		"true":   True,
-		"var":    Var,
-		"while":  While,
+		"and":    AndTT,
+		"class":  ClassTT,
+		"else":   ElseTT,
+		"elseif": ElseifTT,
+		"false":  FalseTT,
+		"for":    ForTT,
+		"fun":    FunTT,
+		"if":     IfTT,
+		"nil":    NilTT,
+		"or":     OrTT,
+		"print":  PrintTT,
+		"return": ReturnTT,
+		"super":  SuperTT,
+		"this":   ThisTT,
+		"true":   TrueTT,
+		"var":    VarTT,
+		"while":  WhileTT,
 	}
 
 	return &Scanner{
@@ -72,10 +72,10 @@ func (s *Scanner) ScanTokens() TokenList {
 
 	for s.stack_.Top() != 0 {
 		s.stack_.Pop()
-		s.tokens = append(s.tokens, NewToken(RightBrace, "}", nil, s.line))
+		s.tokens = append(s.tokens, NewToken(RightBraceTT, "}", nil, s.line))
 	}
 
-	s.tokens = append(s.tokens, NewToken(EOF, "", nil, s.line))
+	s.tokens = append(s.tokens, NewToken(EOFTT, "", nil, s.line))
 	return s.tokens
 }
 
@@ -84,68 +84,68 @@ func (s *Scanner) scanToken() {
 
 	switch c {
 	case '(':
-		s.addToken(LeftParen, nil)
+		s.addToken(LeftParenTT, nil)
 		break
 	case ')':
-		s.addToken(RightParen, nil)
+		s.addToken(RightParenTT, nil)
 		break
 	// case '{':
-	// 	s.addToken(LeftBrace, nil)
+	// 	s.addToken(LeftBraceTT, nil)
 	// 	break
 	// case '}':
-	// 	s.addToken(RightBrace, nil)
+	// 	s.addToken(RightBraceTT, nil)
 	// 	break
 	case ',':
-		s.addToken(Comma, nil)
+		s.addToken(CommaTT, nil)
 		break
 	case '.':
-		s.addToken(Dot, nil)
+		s.addToken(DotTT, nil)
 		break
 	case '-':
-		s.addToken(Minus, nil)
+		s.addToken(MinusTT, nil)
 		break
 	case '+':
-		s.addToken(Plus, nil)
+		s.addToken(PlusTT, nil)
 		break
 	case ';':
-		s.addToken(Semicolon, nil)
+		s.addToken(SemicolonTT, nil)
 		break
 	case ':':
-		s.addToken(Colon, nil)
+		s.addToken(ColonTT, nil)
 		break
 	case '*':
-		s.addToken(Star, nil)
+		s.addToken(StarTT, nil)
 		break
 	case '!':
 		var tt TokenType
 		if s.match('=') {
-			tt = BangEqual
+			tt = BangEqualTT
 		} else {
-			tt = Bang
+			tt = BangTT
 		}
 		s.addToken(tt, nil)
 	case '=':
 		var tt TokenType
 		if s.match('=') {
-			tt = EqualEqual
+			tt = EqualEqualTT
 		} else {
-			tt = Equal
+			tt = EqualTT
 		}
 		s.addToken(tt, nil)
 	case '<':
 		var tt TokenType
 		if s.match('=') {
-			tt = LessEqual
+			tt = LessEqualTT
 		} else {
-			tt = Less
+			tt = LessTT
 		}
 		s.addToken(tt, nil)
 	case '>':
 		var tt TokenType
 		if s.match('=') {
-			tt = GreaterEqual
+			tt = GreaterEqualTT
 		} else {
-			tt = Greater
+			tt = GreaterTT
 		}
 		s.addToken(tt, nil)
 	case '/':
@@ -155,7 +155,7 @@ func (s *Scanner) scanToken() {
 				s.advance()
 			}
 		} else {
-			s.addToken(Slash, nil)
+			s.addToken(SlashTT, nil)
 		}
 		break
 	case ' ':
@@ -184,7 +184,7 @@ func (s *Scanner) removeUselessNewline() {
 	tokens := make([]*Token, 0)
 	isPreviousNewline := true
 	for _, token := range s.tokens {
-		if token.Type == Newline {
+		if token.Type == NewlineTT {
 			if !isPreviousNewline {
 				tokens = append(tokens, token)
 			}
@@ -225,7 +225,7 @@ func (s *Scanner) addToken(tt TokenType, literal interface{}) {
 }
 
 func (s *Scanner) addNewline() {
-	s.tokens = append(s.tokens, NewToken(Newline, "\\n", nil, s.line))
+	s.tokens = append(s.tokens, NewToken(NewlineTT, "\\n", nil, s.line))
 	s.line++
 	s.isFirst = true
 }
@@ -248,7 +248,7 @@ func (s *Scanner) addBlock() {
 	d := s.stack_.Top()
 	if d < depth {
 		s.stack_.Push(depth)
-		s.tokens = append(s.tokens, NewToken(LeftBrace, "{", nil, s.line))
+		s.tokens = append(s.tokens, NewToken(LeftBraceTT, "{", nil, s.line))
 	} else if d > depth {
 		cnt := 0
 		for s.stack_.Pop() != -1 {
@@ -263,7 +263,7 @@ func (s *Scanner) addBlock() {
 		}
 
 		for i := 0; i < cnt; i++ {
-			s.tokens = append(s.tokens, NewToken(RightBrace, "}", nil, s.line))
+			s.tokens = append(s.tokens, NewToken(RightBraceTT, "}", nil, s.line))
 		}
 	}
 }
@@ -292,7 +292,7 @@ func (s *Scanner) addString() {
 
 	// value := string(s.sourceRunes[s.start+1 : s.current-1])
 	value := s.handleEscapeCharacter()
-	s.addToken(String, string(value))
+	s.addToken(StringTT, string(value))
 }
 
 func (s *Scanner) addNumber() {
@@ -311,7 +311,7 @@ func (s *Scanner) addNumber() {
 	}
 
 	f, _ := strconv.ParseFloat(string(s.sourceRunes[s.start:s.current]), 64)
-	s.addToken(Number, f)
+	s.addToken(NumberTT, f)
 }
 
 func (s *Scanner) addIdentifier() {
@@ -326,7 +326,7 @@ func (s *Scanner) addIdentifier() {
 		return
 	}
 
-	s.addToken(Identifier, nil)
+	s.addToken(IdentifierTT, nil)
 }
 
 func isAlphaNumeric(x rune) bool {

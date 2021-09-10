@@ -7,56 +7,56 @@ type TokenType int
 
 const (
 	// Single-character tokens
-	LeftParen TokenType = iota
-	RightParen
-	LeftBrace
-	RightBrace
-	Comma
-	Dot
-	Minus
-	Newline
-	Plus
-	Semicolon
-	Colon
-	Slash
-	Star
+	LeftParenTT TokenType = iota
+	RightParenTT
+	LeftBraceTT
+	RightBraceTT
+	CommaTT
+	DotTT
+	MinusTT
+	NewlineTT
+	PlusTT
+	SemicolonTT
+	ColonTT
+	SlashTT
+	StarTT
 
 	// One or two chacacter tokens
-	Bang
-	BangEqual
-	BangBang
-	Equal
-	EqualEqual
-	Greater
-	GreaterEqual
-	Less
-	LessEqual
+	BangTT
+	BangEqualTT
+	BangBangTT
+	EqualTT
+	EqualEqualTT
+	GreaterTT
+	GreaterEqualTT
+	LessTT
+	LessEqualTT
 
 	// Literal
-	Identifier
-	String
-	Number
+	IdentifierTT
+	StringTT
+	NumberTT
 
 	// keywords
-	And
-	Class
-	Else
-	Elseif
-	False
-	Fun
-	For
-	If
-	Nil
-	Or
-	Print
-	Return
-	Super
-	This
-	True
-	Var
-	While
+	AndTT
+	ClassTT
+	ElseTT
+	ElseifTT
+	FalseTT
+	FunTT
+	ForTT
+	IfTT
+	NilTT
+	OrTT
+	PrintTT
+	ReturnTT
+	SuperTT
+	ThisTT
+	TrueTT
+	VarTT
+	WhileTT
 
-	EOF
+	EOFTT
 )
 
 // Token is struct of token

@@ -21,9 +21,9 @@ func TestAstPrinter(t *testing.T) {
 			given: []tlps.Stmt{
 				tlps.NewExpression(tlps.NewBinary(
 					tlps.NewUnary(
-						tlps.NewToken(tlps.Minus, "-", nil, 1), tlps.NewLiteral(123),
+						tlps.NewToken(tlps.MinusTT, "-", nil, 1), tlps.NewLiteral(123),
 					),
-					tlps.NewToken(tlps.Star, "*", nil, 1),
+					tlps.NewToken(tlps.StarTT, "*", nil, 1),
 					tlps.NewGrouping(tlps.NewLiteral(45.67))),
 				),
 			},
@@ -34,9 +34,9 @@ func TestAstPrinter(t *testing.T) {
 			given: []tlps.Stmt{
 				tlps.NewExpression(tlps.NewLogical(
 					tlps.NewUnary(
-						tlps.NewToken(tlps.Minus, "-", nil, 1), tlps.NewLiteral(123),
+						tlps.NewToken(tlps.MinusTT, "-", nil, 1), tlps.NewLiteral(123),
 					),
-					tlps.NewToken(tlps.And, "and", nil, 1),
+					tlps.NewToken(tlps.AndTT, "and", nil, 1),
 					tlps.NewGrouping(tlps.NewLiteral(45.67))),
 				),
 			},
@@ -46,7 +46,7 @@ func TestAstPrinter(t *testing.T) {
 			expected: "(assign x 123)",
 			given: []tlps.Stmt{
 				tlps.NewExpression(tlps.NewAssign(
-					tlps.NewToken(tlps.Identifier, "x", nil, 1),
+					tlps.NewToken(tlps.IdentifierTT, "x", nil, 1),
 					tlps.NewLiteral(123)),
 				),
 			},
@@ -56,7 +56,7 @@ func TestAstPrinter(t *testing.T) {
 			expected: "(variable x)",
 			given: []tlps.Stmt{
 				tlps.NewExpression(tlps.NewVariable(
-					tlps.NewToken(tlps.Identifier, "x", nil, 1),
+					tlps.NewToken(tlps.IdentifierTT, "x", nil, 1),
 				)),
 			},
 		},
@@ -68,12 +68,12 @@ func TestAstPrinter(t *testing.T) {
 					tlps.NewLiteral(true),
 					tlps.NewExpression(
 						tlps.NewVariable(
-							tlps.NewToken(tlps.Identifier, "x", nil, 1),
+							tlps.NewToken(tlps.IdentifierTT, "x", nil, 1),
 						),
 					),
 					tlps.NewExpression(
 						tlps.NewVariable(
-							tlps.NewToken(tlps.Identifier, "y", nil, 1),
+							tlps.NewToken(tlps.IdentifierTT, "y", nil, 1),
 						),
 					),
 				),
@@ -101,7 +101,7 @@ func TestAstPrinter(t *testing.T) {
 			expected: "(declare x (init 123))",
 			given: []tlps.Stmt{
 				tlps.NewVar_(
-					tlps.NewToken(tlps.Identifier, "x", nil, 1),
+					tlps.NewToken(tlps.IdentifierTT, "x", nil, 1),
 					tlps.NewLiteral(123)),
 			},
 		},
@@ -124,10 +124,10 @@ func TestAstPrinter(t *testing.T) {
 			expected: "(function (args (x, y)) (body (1) (2)))",
 			given: []tlps.Stmt{
 				tlps.NewFunction(
-					tlps.NewToken(tlps.Identifier, "f", nil, 1),
+					tlps.NewToken(tlps.IdentifierTT, "f", nil, 1),
 					[]*tlps.Token{
-						tlps.NewToken(tlps.Identifier, "x", nil, 1),
-						tlps.NewToken(tlps.Identifier, "y", nil, 1),
+						tlps.NewToken(tlps.IdentifierTT, "x", nil, 1),
+						tlps.NewToken(tlps.IdentifierTT, "y", nil, 1),
 					},
 					[]tlps.Stmt{
 						tlps.NewExpression(tlps.NewLiteral(1)),
