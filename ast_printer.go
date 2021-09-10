@@ -85,7 +85,7 @@ func (ap *AstPrinter) visitFunctionStmt(f *Function) (interface{}, error) {
 	return "(function (args (" + strings.Join(params, ", ") + ")) (body " + strings.Join(stmts, " ") + "))", nil
 }
 
-func (ap *AstPrinter) visitIf_Stmt(i *If_) (interface{}, error) {
+func (ap *AstPrinter) visitIfStmt(i *If) (interface{}, error) {
 	cond, err := ap.parenthesizeExpr("cond", i.Condition)
 	if err != nil {
 		return "", nil
@@ -105,11 +105,11 @@ func (ap *AstPrinter) visitIf_Stmt(i *If_) (interface{}, error) {
 	return "(if " + cond + " " + thenBranch + " " + elseBranch + ")", nil
 }
 
-func (ap *AstPrinter) visitPrint_Stmt(p *Print_) (interface{}, error) {
+func (ap *AstPrinter) visitPrintStmt(p *Print) (interface{}, error) {
 	return ap.parenthesizeExpr("print", p.Expression)
 }
 
-func (ap *AstPrinter) visitReturn_Stmt(r *Return_) (interface{}, error) {
+func (ap *AstPrinter) visitReturnStmt(r *Return) (interface{}, error) {
 	expr, err := ap.parenthesizeExpr(r.Keyword.Lexeme, r.Value)
 	if err != nil {
 		return nil, err
@@ -118,7 +118,7 @@ func (ap *AstPrinter) visitReturn_Stmt(r *Return_) (interface{}, error) {
 	return expr, nil
 }
 
-func (ap *AstPrinter) visitWhile_Stmt(p *While_) (interface{}, error) {
+func (ap *AstPrinter) visitWhileStmt(p *While) (interface{}, error) {
 	cond, err := ap.parenthesizeExpr("cond", p.Condition)
 	if err != nil {
 		return "", err
@@ -130,7 +130,7 @@ func (ap *AstPrinter) visitWhile_Stmt(p *While_) (interface{}, error) {
 	return "(while " + cond + " " + body + ")", nil
 }
 
-func (ap *AstPrinter) visitVar_Stmt(v *Var_) (interface{}, error) {
+func (ap *AstPrinter) visitVarStmt(v *Var) (interface{}, error) {
 	initializer, err := ap.parenthesizeExpr("init", v.Initializer)
 	if err != nil {
 		return "", nil

@@ -43,10 +43,10 @@ func TestParser(t *testing.T) {
 		{
 			name: "if true:\n  print 1",
 			expected: []tlps.Stmt{
-				tlps.NewIf_(
+				tlps.NewIf(
 					tlps.NewLiteral(true),
 					tlps.NewBlock([]tlps.Stmt{
-						tlps.NewPrint_(tlps.NewLiteral(1.0)),
+						tlps.NewPrint(tlps.NewLiteral(1.0)),
 					}),
 					nil,
 				),
@@ -67,13 +67,13 @@ func TestParser(t *testing.T) {
 		{
 			name: "if true:\n  print 1\n  else:  print 2\n",
 			expected: []tlps.Stmt{
-				tlps.NewIf_(
+				tlps.NewIf(
 					tlps.NewLiteral(true),
 					tlps.NewBlock([]tlps.Stmt{
-						tlps.NewPrint_(tlps.NewLiteral(1.0)),
+						tlps.NewPrint(tlps.NewLiteral(1.0)),
 					}),
 					tlps.NewBlock([]tlps.Stmt{
-						tlps.NewPrint_(tlps.NewLiteral(2.0)),
+						tlps.NewPrint(tlps.NewLiteral(2.0)),
 					}),
 				),
 			},
@@ -106,11 +106,11 @@ func TestParser(t *testing.T) {
 			expected: []tlps.Stmt{
 				tlps.NewBlock(
 					[]tlps.Stmt{
-						tlps.NewVar_(
+						tlps.NewVar(
 							tlps.NewToken(tlps.IdentifierTT, "i", nil, 1),
 							tlps.NewLiteral(0.0),
 						),
-						tlps.NewWhile_(
+						tlps.NewWhile(
 							tlps.NewBinary(
 								tlps.NewVariable(tlps.NewToken(tlps.IdentifierTT, "i", nil, 1)),
 								tlps.NewToken(tlps.LessTT, "<", nil, 1),
@@ -118,7 +118,7 @@ func TestParser(t *testing.T) {
 							),
 							tlps.NewBlock([]tlps.Stmt{
 								tlps.NewBlock([]tlps.Stmt{
-									tlps.NewPrint_(
+									tlps.NewPrint(
 										tlps.NewVariable(
 											tlps.NewToken(tlps.IdentifierTT, "i", nil, 2),
 										),
@@ -179,7 +179,7 @@ func TestParser(t *testing.T) {
 						tlps.NewToken(tlps.IdentifierTT, "y", nil, 1),
 					},
 					[]tlps.Stmt{
-						tlps.NewReturn_(
+						tlps.NewReturn(
 							tlps.NewToken(tlps.ReturnTT, "return", nil, 2),
 							tlps.NewBinary(
 								tlps.NewVariable(tlps.NewToken(tlps.IdentifierTT, "x", nil, 2)),

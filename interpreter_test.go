@@ -57,7 +57,7 @@ func TestInterpreter(t *testing.T) {
 						tlps.NewToken(tlps.IdentifierTT, "y", nil, 1),
 					},
 					[]tlps.Stmt{
-						tlps.NewReturn_(
+						tlps.NewReturn(
 							tlps.NewToken(tlps.ReturnTT, "return", nil, 2),
 							tlps.NewBinary(
 								tlps.NewVariable(tlps.NewToken(tlps.IdentifierTT, "x", nil, 2)),

@@ -140,7 +140,7 @@ func (p *Parser) forStatement() (Stmt, error) {
 	if condition == nil {
 		condition = NewLiteral(true)
 	}
-	body = NewWhile_(condition, body)
+	body = NewWhile(condition, body)
 
 	if initializer != nil {
 		body = NewBlock([]Stmt{initializer, body})
@@ -191,7 +191,7 @@ func (p *Parser) ifStatement() (Stmt, error) {
 		}
 	}
 
-	return NewIf_(condition, thenBranch, elseBranch), nil
+	return NewIf(condition, thenBranch, elseBranch), nil
 }
 
 func (p *Parser) printStatement() (Stmt, error) {
@@ -204,7 +204,7 @@ func (p *Parser) printStatement() (Stmt, error) {
 		return nil, err
 	}
 
-	return NewPrint_(value), nil
+	return NewPrint(value), nil
 }
 
 func (p *Parser) returnStatement() (Stmt, error) {
@@ -222,7 +222,7 @@ func (p *Parser) returnStatement() (Stmt, error) {
 	if err != nil {
 		return nil, err
 	}
-	return NewReturn_(keyword, value), nil
+	return NewReturn(keyword, value), nil
 }
 
 func (p *Parser) whileStatement() (Stmt, error) {
@@ -243,7 +243,7 @@ func (p *Parser) whileStatement() (Stmt, error) {
 		return nil, err
 	}
 
-	return NewWhile_(condition, body), nil
+	return NewWhile(condition, body), nil
 }
 
 func (p *Parser) varDecralation() (Stmt, error) {
@@ -266,7 +266,7 @@ func (p *Parser) varDecralation() (Stmt, error) {
 		return nil, err
 	}
 
-	return NewVar_(name, initializer), nil
+	return NewVar(name, initializer), nil
 }
 
 func (p *Parser) expressionStatement() (Stmt, error) {

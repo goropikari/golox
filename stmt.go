@@ -9,11 +9,11 @@ type VisitorStmt interface {
 	visitBlockStmt(*Block) (interface{}, error)
 	visitExpressionStmt(*Expression) (interface{}, error)
 	visitFunctionStmt(*Function) (interface{}, error)
-	visitIf_Stmt(*If_) (interface{}, error)
-	visitPrint_Stmt(*Print_) (interface{}, error)
-	visitReturn_Stmt(*Return_) (interface{}, error)
-	visitVar_Stmt(*Var_) (interface{}, error)
-	visitWhile_Stmt(*While_) (interface{}, error)
+	visitIfStmt(*If) (interface{}, error)
+	visitPrintStmt(*Print) (interface{}, error)
+	visitReturnStmt(*Return) (interface{}, error)
+	visitVarStmt(*Var) (interface{}, error)
+	visitWhileStmt(*While) (interface{}, error)
 }
 
 type Block struct {
@@ -78,106 +78,106 @@ func (rec *Function) IsType(v interface{}) bool {
 	return false
 }
 
-type If_ struct {
+type If struct {
 	Condition  Expr
 	ThenBranch Stmt
 	ElseBranch Stmt
 }
 
-func NewIf_(condition Expr, thenBranch Stmt, elseBranch Stmt) Stmt {
-	return &If_{condition, thenBranch, elseBranch}
+func NewIf(condition Expr, thenBranch Stmt, elseBranch Stmt) Stmt {
+	return &If{condition, thenBranch, elseBranch}
 }
 
-func (i *If_) Accept(visitor VisitorStmt) (interface{}, error) {
-	return visitor.visitIf_Stmt(i)
+func (i *If) Accept(visitor VisitorStmt) (interface{}, error) {
+	return visitor.visitIfStmt(i)
 }
 
-func (rec *If_) IsType(v interface{}) bool {
+func (rec *If) IsType(v interface{}) bool {
 	switch v.(type) {
-	case *If_:
+	case *If:
 		return true
 	}
 	return false
 }
 
-type Print_ struct {
+type Print struct {
 	Expression Expr
 }
 
-func NewPrint_(expression Expr) Stmt {
-	return &Print_{expression}
+func NewPrint(expression Expr) Stmt {
+	return &Print{expression}
 }
 
-func (p *Print_) Accept(visitor VisitorStmt) (interface{}, error) {
-	return visitor.visitPrint_Stmt(p)
+func (p *Print) Accept(visitor VisitorStmt) (interface{}, error) {
+	return visitor.visitPrintStmt(p)
 }
 
-func (rec *Print_) IsType(v interface{}) bool {
+func (rec *Print) IsType(v interface{}) bool {
 	switch v.(type) {
-	case *Print_:
+	case *Print:
 		return true
 	}
 	return false
 }
 
-type Return_ struct {
+type Return struct {
 	Keyword *Token
 	Value   Expr
 }
 
-func NewReturn_(keyword *Token, value Expr) Stmt {
-	return &Return_{keyword, value}
+func NewReturn(keyword *Token, value Expr) Stmt {
+	return &Return{keyword, value}
 }
 
-func (r *Return_) Accept(visitor VisitorStmt) (interface{}, error) {
-	return visitor.visitReturn_Stmt(r)
+func (r *Return) Accept(visitor VisitorStmt) (interface{}, error) {
+	return visitor.visitReturnStmt(r)
 }
 
-func (rec *Return_) IsType(v interface{}) bool {
+func (rec *Return) IsType(v interface{}) bool {
 	switch v.(type) {
-	case *Return_:
+	case *Return:
 		return true
 	}
 	return false
 }
 
-type Var_ struct {
+type Var struct {
 	Name        *Token
 	Initializer Expr
 }
 
-func NewVar_(name *Token, initializer Expr) Stmt {
-	return &Var_{name, initializer}
+func NewVar(name *Token, initializer Expr) Stmt {
+	return &Var{name, initializer}
 }
 
-func (v *Var_) Accept(visitor VisitorStmt) (interface{}, error) {
-	return visitor.visitVar_Stmt(v)
+func (v *Var) Accept(visitor VisitorStmt) (interface{}, error) {
+	return visitor.visitVarStmt(v)
 }
 
-func (rec *Var_) IsType(v interface{}) bool {
+func (rec *Var) IsType(v interface{}) bool {
 	switch v.(type) {
-	case *Var_:
+	case *Var:
 		return true
 	}
 	return false
 }
 
-type While_ struct {
+type While struct {
 	Condition Expr
 	Body      Stmt
 }
 
-func NewWhile_(condition Expr, body Stmt) Stmt {
-	return &While_{condition, body}
+func NewWhile(condition Expr, body Stmt) Stmt {
+	return &While{condition, body}
 }
 
-func (w *While_) Accept(visitor VisitorStmt) (interface{}, error) {
-	return visitor.visitWhile_Stmt(w)
+func (w *While) Accept(visitor VisitorStmt) (interface{}, error) {
+	return visitor.visitWhileStmt(w)
 }
 
-func (rec *While_) IsType(v interface{}) bool {
+func (rec *While) IsType(v interface{}) bool {
 	switch v.(type) {
-	case *While_:
+	case *While:
 		return true
 	}
 	return false

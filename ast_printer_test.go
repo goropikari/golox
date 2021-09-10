@@ -64,7 +64,7 @@ func TestAstPrinter(t *testing.T) {
 			name:     "if statement",
 			expected: "(if (cond true) (thenBranch (variable x)) (elseBranch (variable y)))",
 			given: []tlps.Stmt{
-				tlps.NewIf_(
+				tlps.NewIf(
 					tlps.NewLiteral(true),
 					tlps.NewExpression(
 						tlps.NewVariable(
@@ -83,16 +83,16 @@ func TestAstPrinter(t *testing.T) {
 			name:     "print 123",
 			expected: "(print 123)",
 			given: []tlps.Stmt{
-				tlps.NewPrint_(tlps.NewLiteral(123)),
+				tlps.NewPrint(tlps.NewLiteral(123)),
 			},
 		},
 		{
 			name:     "while statement",
 			expected: "(while (cond 123) (body (print 123)))",
 			given: []tlps.Stmt{
-				tlps.NewWhile_(
+				tlps.NewWhile(
 					tlps.NewLiteral(123),
-					tlps.NewPrint_(tlps.NewLiteral(123)),
+					tlps.NewPrint(tlps.NewLiteral(123)),
 				),
 			},
 		},
@@ -100,7 +100,7 @@ func TestAstPrinter(t *testing.T) {
 			name:     "declare variable: var x = 123",
 			expected: "(declare x (init 123))",
 			given: []tlps.Stmt{
-				tlps.NewVar_(
+				tlps.NewVar(
 					tlps.NewToken(tlps.IdentifierTT, "x", nil, 1),
 					tlps.NewLiteral(123)),
 			},

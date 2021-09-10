@@ -268,7 +268,7 @@ func (i *Interpreter) visitFunctionStmt(stmt *Function) (interface{}, error) {
 	return nil, nil
 }
 
-func (i *Interpreter) visitIf_Stmt(stmt *If_) (interface{}, error) {
+func (i *Interpreter) visitIfStmt(stmt *If) (interface{}, error) {
 	val, err := i.evaluate(stmt.Condition)
 	if err != nil {
 		return nil, err
@@ -281,7 +281,7 @@ func (i *Interpreter) visitIf_Stmt(stmt *If_) (interface{}, error) {
 	return nil, nil
 }
 
-func (i *Interpreter) visitPrint_Stmt(stmt *Print_) (interface{}, error) {
+func (i *Interpreter) visitPrintStmt(stmt *Print) (interface{}, error) {
 	value, err := i.evaluate(stmt.Expression)
 	if err != nil {
 		return nil, err
@@ -291,7 +291,7 @@ func (i *Interpreter) visitPrint_Stmt(stmt *Print_) (interface{}, error) {
 	return nil, nil
 }
 
-func (i *Interpreter) visitReturn_Stmt(stmt *Return_) (interface{}, error) {
+func (i *Interpreter) visitReturnStmt(stmt *Return) (interface{}, error) {
 	var value interface{} = nil
 	if stmt.Value != nil {
 		var err error
@@ -304,7 +304,7 @@ func (i *Interpreter) visitReturn_Stmt(stmt *Return_) (interface{}, error) {
 	return nil, NewReturnValue(value)
 }
 
-func (i *Interpreter) visitWhile_Stmt(stmt *While_) (interface{}, error) {
+func (i *Interpreter) visitWhileStmt(stmt *While) (interface{}, error) {
 	v, _ := i.evaluate(stmt.Condition)
 	for ; i.isTruthy(v); v, _ = i.evaluate(stmt.Condition) {
 		i.execute(stmt.Body)
@@ -313,7 +313,7 @@ func (i *Interpreter) visitWhile_Stmt(stmt *While_) (interface{}, error) {
 	return nil, nil
 }
 
-func (i *Interpreter) visitVar_Stmt(stmt *Var_) (interface{}, error) {
+func (i *Interpreter) visitVarStmt(stmt *Var) (interface{}, error) {
 	var value interface{} = nil
 	if stmt.Initializer != nil {
 		v, err := i.evaluate(stmt.Initializer)
