@@ -79,12 +79,106 @@ func TestInterpreter(t *testing.T) {
 				),
 			},
 		},
+		{
+			name:     "scope resolution",
+			expected: "20",
+			given: []tlps.Stmt{
+				// fun f():
+				//   var a = 10
+				//   fun g():
+				//     fun h():
+				//       return a
+				//     var x = h()
+				//     var a = 123
+				//     var y = h()
+				//     return x + y
+				//   return g
+				// var fn = f()
+				// fn()
+				tlps.NewFunction(
+					tlps.NewToken(tlps.IdentifierTT, "f", nil, 1),
+					[]*tlps.Token{},
+					[]tlps.Stmt{
+						tlps.NewVar(
+							tlps.NewToken(tlps.IdentifierTT, "a", nil, 2),
+							tlps.NewLiteral(10.0),
+						),
+
+						tlps.NewFunction(
+							tlps.NewToken(tlps.IdentifierTT, "g", nil, 3),
+							[]*tlps.Token{},
+							[]tlps.Stmt{
+								tlps.NewFunction(
+									tlps.NewToken(tlps.IdentifierTT, "h", nil, 4),
+									[]*tlps.Token{},
+									[]tlps.Stmt{
+										tlps.NewReturn(
+											tlps.NewToken(tlps.ReturnTT, "return", nil, 2),
+											tlps.NewVariable(tlps.NewToken(tlps.IdentifierTT, "a", nil, 2)),
+										),
+									},
+								),
+								tlps.NewVar(
+									tlps.NewToken(tlps.IdentifierTT, "x", nil, 6),
+									tlps.NewCall(
+										tlps.NewVariable(tlps.NewToken(tlps.IdentifierTT, "h", nil, 6)),
+										tlps.NewToken(tlps.LeftParenTT, "(", nil, 6),
+										[]tlps.Expr{},
+									),
+								),
+								tlps.NewVar(
+									tlps.NewToken(tlps.IdentifierTT, "a", nil, 7),
+									tlps.NewLiteral(123.0),
+								),
+								tlps.NewVar(
+									tlps.NewToken(tlps.IdentifierTT, "y", nil, 8),
+									tlps.NewCall(
+										tlps.NewVariable(tlps.NewToken(tlps.IdentifierTT, "h", nil, 8)),
+										tlps.NewToken(tlps.LeftParenTT, "(", nil, 8),
+										[]tlps.Expr{},
+									),
+								),
+								tlps.NewReturn(
+									tlps.NewToken(tlps.ReturnTT, "return", nil, 9),
+									tlps.NewBinary(
+										tlps.NewVariable(tlps.NewToken(tlps.IdentifierTT, "x", nil, 9)),
+										tlps.NewToken(tlps.PlusTT, "+", nil, 9),
+										tlps.NewVariable(tlps.NewToken(tlps.IdentifierTT, "y", nil, 9)),
+									),
+								),
+							},
+						),
+						tlps.NewReturn(
+							tlps.NewToken(tlps.ReturnTT, "return", nil, 10),
+							tlps.NewVariable(tlps.NewToken(tlps.IdentifierTT, "g", nil, 10)),
+						),
+					},
+				),
+				tlps.NewVar(
+					tlps.NewToken(tlps.IdentifierTT, "fn", nil, 11),
+					tlps.NewCall(
+						tlps.NewVariable(tlps.NewToken(tlps.IdentifierTT, "f", nil, 11)),
+						tlps.NewToken(tlps.LeftParenTT, "(", nil, 11),
+						[]tlps.Expr{},
+					),
+				),
+				tlps.NewExpression(
+					tlps.NewCall(
+						tlps.NewVariable(tlps.NewToken(tlps.IdentifierTT, "fn", nil, 12)),
+						tlps.NewToken(tlps.LeftParenTT, "(", nil, 12),
+						[]tlps.Expr{},
+					),
+				),
+			},
+		},
 	}
 
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			interpreter := tlps.NewInterpreter(r)
+			resolver := tlps.NewResolver(r, interpreter)
+			resolver.ResolveStmts(tt.given)
 			actual, _ := interpreter.Interpret(tt.given)
 			assert.Equal(t, tt.expected, actual)
 		})

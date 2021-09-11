@@ -6,12 +6,15 @@ import (
 	"strings"
 )
 
+// AstPrinter is struct of ast printer
 type AstPrinter struct{}
 
+// NewAstPrinter is constructor of AstPrinter
 func NewAstPrinter() *AstPrinter {
 	return &AstPrinter{}
 }
 
+// Print prints given statements ast
 func (ap *AstPrinter) Print(stmts []Stmt) (string, error) {
 	val, err := stmts[0].Accept(ap)
 	return val.(string), err
@@ -22,7 +25,14 @@ func (ap *AstPrinter) visitBinaryExpr(expr *Binary) (interface{}, error) {
 }
 
 func (ap *AstPrinter) visitCallExpr(expr *Call) (interface{}, error) {
-	return nil, nil
+	callee, _ := ap.parenthesizeExpr("callee", expr.Callee)
+	args := make([]string, 0)
+	for _, v := range expr.Arguments {
+		arg, _ := ap.parenthesizeExpr("arg", v)
+		args = append(args, arg)
+	}
+
+	return callee + strings.Join(args, " "), nil
 }
 
 func (ap *AstPrinter) visitGroupingExpr(expr *Grouping) (interface{}, error) {
@@ -77,7 +87,7 @@ func (ap *AstPrinter) visitFunctionStmt(f *Function) (interface{}, error) {
 	for _, stmt := range f.Body {
 		s, err := stmt.Accept(ap)
 		if err != nil {
-			return nil, err
+			return "nil", err
 		}
 		stmts = append(stmts, "("+s.(string)+")")
 	}
@@ -112,7 +122,7 @@ func (ap *AstPrinter) visitPrintStmt(p *Print) (interface{}, error) {
 func (ap *AstPrinter) visitReturnStmt(r *Return) (interface{}, error) {
 	expr, err := ap.parenthesizeExpr(r.Keyword.Lexeme, r.Value)
 	if err != nil {
-		return nil, err
+		return "nil", err
 	}
 
 	return expr, nil

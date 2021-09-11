@@ -2,10 +2,12 @@ package tlps
 
 import "github.com/goropikari/tlps/collections/stack"
 
+// IndentStack is struct of stack for storing indentation level
 type IndentStack struct {
 	Stack *stack.Stack
 }
 
+// NewIndentStack is constructor of IndentStack
 func NewIndentStack() *IndentStack {
 	return &IndentStack{stack.NewStack()}
 }

@@ -5,10 +5,12 @@ import (
 	"reflect"
 )
 
+// Interpreter is struct of interpreter
 type Interpreter struct {
 	Runtime *Runtime
 }
 
+// NewInterpreter is constructor of Interpreter
 func NewInterpreter(runtime *Runtime) *Interpreter {
 	globals := runtime.Globals
 
@@ -19,6 +21,7 @@ func NewInterpreter(runtime *Runtime) *Interpreter {
 	}
 }
 
+// Interpret interprets given statements
 func (i *Interpreter) Interpret(statements []Stmt) (string, error) {
 	var s string
 	var err error
@@ -190,7 +193,15 @@ func (i *Interpreter) visitUnaryExpr(expr *Unary) (interface{}, error) {
 }
 
 func (i *Interpreter) visitVariableExpr(expr *Variable) (interface{}, error) {
-	return i.Runtime.Environment.Get(expr.Name)
+	// return i.Runtime.Environment.Get(expr.Name)
+	return i.lookUpVariable(expr.Name, expr)
+}
+
+func (i *Interpreter) lookUpVariable(name *Token, expr Expr) (interface{}, error) {
+	if distance, ok := i.Runtime.Locals[expr]; ok {
+		return i.Runtime.Environment.GetAt(distance, name.Lexeme)
+	}
+	return i.Runtime.Globals.Get(name)
 }
 
 func checkNumberOperand(operator *Token, operand interface{}) error {
@@ -222,6 +233,13 @@ func (i *Interpreter) isTruthy(object interface{}) bool {
 
 func (i *Interpreter) evaluate(expr Expr) (interface{}, error) {
 	return expr.Accept(i)
+}
+
+// Resolve resolves an expression
+func (i *Interpreter) Resolve(expr Expr, depth int) error {
+	i.Runtime.Locals[expr] = depth
+
+	return nil
 }
 
 func (i *Interpreter) execute(stmt Stmt) (interface{}, error) {
@@ -332,10 +350,16 @@ func (i *Interpreter) visitAssignExpr(expr *Assign) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = i.Runtime.Environment.Assign(expr.Name, value)
-	if err != nil {
-		return nil, err
+
+	if distance, ok := i.Runtime.Locals[expr]; ok {
+		i.Runtime.Environment.AssignAt(distance, expr.Name, value)
+	} else {
+		err := i.Runtime.Globals.Assign(expr.Name, value)
+		if err != nil {
+			return nil, err
+		}
 	}
+
 	return value, nil
 }
 

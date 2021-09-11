@@ -12,17 +12,22 @@ type Runtime struct {
 	HadRuntimeError bool
 	Globals         *Environment
 	Environment     *Environment
+	Locals          map[Expr]int
+	Scopes          *ScopeStack
 }
 
 // NewRuntime is constructor of Runtime
 func NewRuntime() *Runtime {
 	globals := NewEnvironment(nil)
 	environment := globals
+
 	return &Runtime{
 		HadError:        false,
 		HadRuntimeError: false,
 		Globals:         globals,
 		Environment:     environment,
+		Locals:          make(map[Expr]int),
+		Scopes:          NewScopeStack(),
 	}
 }
 
@@ -44,8 +49,17 @@ func (r *Runtime) Run(source *bytes.Buffer) {
 		return
 	}
 
-	// fmt.Println(NewAstPrinter().Print(expression))
+	// fmt.Println(NewAstPrinter().Print(statements))
 	interpreter := NewInterpreter(r)
+
+	resolver := NewResolver(r, interpreter)
+	resolver.ResolveStmts(statements)
+
+	// Stop if there was a resolution error
+	if r.HadError {
+		return
+	}
+
 	interpreter.Interpret(statements)
 }
 
@@ -69,6 +83,7 @@ func (r *Runtime) report(line int, where string, message string) {
 	r.HadError = true
 }
 
+// RuntimeError is error of runtime
 func (r *Runtime) RuntimeError(err error) {
 	e := err.(*CustomError)
 	fmt.Fprint(os.Stderr, err.Error()+"\n[line "+fmt.Sprint(e.Token.Line)+"]")
