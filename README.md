@@ -21,8 +21,8 @@ Architecture is based on jlox (tree-walk interpreter) by [munificent/craftingint
 // declare variable
 var x = 10; // terminal ';' is optional
 
-var こんちには = "Hello World"
-print こんにちは
+var こんにちは = "Hello World"
+print こんにちは // => Hello World
 
 // if statement
 if expr:
@@ -55,8 +55,8 @@ fun makeCounter():
   return count
 
 var counter = makeCounter()
-print counter() // 1
-print counter() // 2
+print counter() // => 1
+print counter() // => 2
 
 // indentation can be used for if branch, loop body and function body
 var x = 1
