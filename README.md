@@ -19,6 +19,9 @@ Architecture is based on jlox (tree-walk interpreter) by [munificent/craftingint
 // declare variable
 var x = 10; // terminal ';' is optional
 
+var こんちには = "Hello World"
+print こんにちは
+
 // if statement
 if expr:
   statements
@@ -34,13 +37,34 @@ while expr:
 // for loop
 for var i = 0; i < 5; i = i + 1:
   print i
+
+// function
+fun fib(n):
+  if n <= 1:
+    return n
+  return fib(n-1) + fib(n-2)
+
+// closure
+fun makeCounter():
+  var i = 0
+  fun count():
+    i = i + 1
+    return i
+  return count
+
+var counter = makeCounter()
+print counter() // 1
+print counter() // 2
+
+// indentation can be used for if branch, loop body and function body
+var x = 1
+  var y = 1  // indentation error
 ```
 
 # Todo
 
-- [ ] add tests
 - [x] escape sequence
-- [ ] detect IndentationError
+- [x] detect IndentationError
 - [ ] import another tlps file
 - [ ] support IO
 

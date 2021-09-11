@@ -18,10 +18,12 @@ type VisitorStmt interface {
 
 type Block struct {
 	Statements []Stmt
+	Keyword    *Token
+	Typ        BlockType
 }
 
-func NewBlock(statements []Stmt) Stmt {
-	return &Block{statements}
+func NewBlock(statements []Stmt, keyword *Token, typ BlockType) Stmt {
+	return &Block{statements, keyword, typ}
 }
 
 func (b *Block) Accept(visitor VisitorStmt) (interface{}, error) {

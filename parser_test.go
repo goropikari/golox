@@ -45,9 +45,13 @@ func TestParser(t *testing.T) {
 			expected: []tlps.Stmt{
 				tlps.NewIf(
 					tlps.NewLiteral(true),
-					tlps.NewBlock([]tlps.Stmt{
-						tlps.NewPrint(tlps.NewLiteral(1.0)),
-					}),
+					tlps.NewBlock(
+						[]tlps.Stmt{
+							tlps.NewPrint(tlps.NewLiteral(1.0)),
+						},
+						tlps.NewToken(tlps.LeftBraceTT, "{", nil, 2),
+						tlps.IfBlock,
+					),
 					nil,
 				),
 			},
@@ -65,16 +69,24 @@ func TestParser(t *testing.T) {
 			},
 		},
 		{
-			name: "if true:\n  print 1\n  else:  print 2\n",
+			name: "if true:\n  print 1\nelse:\n  print 2\n",
 			expected: []tlps.Stmt{
 				tlps.NewIf(
 					tlps.NewLiteral(true),
-					tlps.NewBlock([]tlps.Stmt{
-						tlps.NewPrint(tlps.NewLiteral(1.0)),
-					}),
-					tlps.NewBlock([]tlps.Stmt{
-						tlps.NewPrint(tlps.NewLiteral(2.0)),
-					}),
+					tlps.NewBlock(
+						[]tlps.Stmt{
+							tlps.NewPrint(tlps.NewLiteral(1.0)),
+						},
+						tlps.NewToken(tlps.LeftBraceTT, "{", nil, 2),
+						tlps.IfBlock,
+					),
+					tlps.NewBlock(
+						[]tlps.Stmt{
+							tlps.NewPrint(tlps.NewLiteral(2.0)),
+						},
+						tlps.NewToken(tlps.LeftBraceTT, "{", nil, 4),
+						tlps.IfBlock,
+					),
 				),
 			},
 			given: tlps.TokenList{
@@ -93,12 +105,12 @@ func TestParser(t *testing.T) {
 				tlps.NewToken(tlps.ElseTT, "else", nil, 2),
 				tlps.NewToken(tlps.ColonTT, ":", nil, 2),
 				tlps.NewToken(tlps.NewlineTT, "\n", nil, 2),
-				tlps.NewToken(tlps.LeftBraceTT, "{", nil, 3),
-				tlps.NewToken(tlps.PrintTT, "print", nil, 3),
-				tlps.NewToken(tlps.NumberTT, "2", 2.0, 3),
-				tlps.NewToken(tlps.NewlineTT, "\n", nil, 3),
-				tlps.NewToken(tlps.RightBraceTT, "}", nil, 3),
-				tlps.NewToken(tlps.EOFTT, "", nil, 3),
+				tlps.NewToken(tlps.LeftBraceTT, "{", nil, 4),
+				tlps.NewToken(tlps.PrintTT, "print", nil, 4),
+				tlps.NewToken(tlps.NumberTT, "2", 2.0, 4),
+				tlps.NewToken(tlps.NewlineTT, "\n", nil, 4),
+				tlps.NewToken(tlps.RightBraceTT, "}", nil, 4),
+				tlps.NewToken(tlps.EOFTT, "", nil, 4),
 			},
 		},
 		{
@@ -116,29 +128,39 @@ func TestParser(t *testing.T) {
 								tlps.NewToken(tlps.LessTT, "<", nil, 1),
 								tlps.NewLiteral(5.0),
 							),
-							tlps.NewBlock([]tlps.Stmt{
-								tlps.NewBlock([]tlps.Stmt{
-									tlps.NewPrint(
-										tlps.NewVariable(
-											tlps.NewToken(tlps.IdentifierTT, "i", nil, 2),
-										),
-									),
-								}),
-								tlps.NewExpression(
-									tlps.NewAssign(
-										tlps.NewToken(tlps.IdentifierTT, "i", nil, 1),
-										tlps.NewBinary(
-											tlps.NewVariable(
-												tlps.NewToken(tlps.IdentifierTT, "i", nil, 1),
+							tlps.NewBlock(
+								[]tlps.Stmt{
+									tlps.NewBlock(
+										[]tlps.Stmt{
+											tlps.NewPrint(
+												tlps.NewVariable(
+													tlps.NewToken(tlps.IdentifierTT, "i", nil, 2),
+												),
 											),
-											tlps.NewToken(tlps.PlusTT, "+", nil, 1),
-											tlps.NewLiteral(1.0),
+										},
+										tlps.NewToken(tlps.LeftBraceTT, "{", nil, 2),
+										tlps.ForBlock,
+									),
+									tlps.NewExpression(
+										tlps.NewAssign(
+											tlps.NewToken(tlps.IdentifierTT, "i", nil, 1),
+											tlps.NewBinary(
+												tlps.NewVariable(
+													tlps.NewToken(tlps.IdentifierTT, "i", nil, 1),
+												),
+												tlps.NewToken(tlps.PlusTT, "+", nil, 1),
+												tlps.NewLiteral(1.0),
+											),
 										),
 									),
-								),
-							}),
+								},
+								tlps.NewToken(tlps.LeftBraceTT, "{", nil, 2),
+								tlps.ForBlock,
+							),
 						),
 					},
+					tlps.NewToken(tlps.LeftBraceTT, "{", nil, 2),
+					tlps.ForBlock,
 				),
 			},
 			given: tlps.TokenList{

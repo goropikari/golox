@@ -116,6 +116,8 @@ func TestAstPrinter(t *testing.T) {
 						tlps.NewExpression(
 							tlps.NewLiteral(987)),
 					},
+					tlps.NewToken(tlps.LeftBraceTT, "{", nil, 1),
+					tlps.NoneBlock,
 				),
 			},
 		},

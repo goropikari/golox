@@ -32,6 +32,9 @@ func NewResolver(runtime *Runtime, interpreter *Interpreter) *Resolver {
 }
 
 func (r *Resolver) visitBlockStmt(stmt *Block) (interface{}, error) {
+	if stmt.Typ == NoneBlock {
+		r.runtime.ErrorTokenMessage(stmt.Keyword, "unexpected indent")
+	}
 	r.beginScope()
 	r.ResolveStmts(stmt.Statements)
 	r.endScope()

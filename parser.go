@@ -70,14 +70,19 @@ func (p *Parser) statement() (Stmt, error) {
 		return p.whileStatement()
 	}
 	if p.match(LeftBraceTT) {
-		b, err := p.block()
-		if err != nil {
-			return nil, err
-		}
-		return NewBlock(b), nil
+		return p.blockStatement(NoneBlock)
 	}
 
 	return p.expressionStatement()
+}
+
+func (p *Parser) blockStatement(typ BlockType) (Stmt, error) {
+	keyword := p.previous() // => '{'
+	b, err := p.block()
+	if err != nil {
+		return nil, err
+	}
+	return NewBlock(b, keyword, typ), nil
 }
 
 func (p *Parser) forStatement() (Stmt, error) {
@@ -128,13 +133,17 @@ func (p *Parser) forStatement() (Stmt, error) {
 		return nil, err
 	}
 
-	body, err := p.statement()
+	keyword, err := p.consume(LeftBraceTT, "Expect '{' for `for` loop body")
+	if err != nil {
+		return nil, err
+	}
+	body, err := p.blockStatement(ForBlock)
 	if err != nil {
 		return nil, err
 	}
 
 	if increment != nil {
-		body = NewBlock([]Stmt{body, NewExpression(increment)})
+		body = NewBlock([]Stmt{body, NewExpression(increment)}, keyword, ForBlock)
 	}
 
 	if condition == nil {
@@ -143,7 +152,7 @@ func (p *Parser) forStatement() (Stmt, error) {
 	body = NewWhile(condition, body)
 
 	if initializer != nil {
-		body = NewBlock([]Stmt{initializer, body})
+		body = NewBlock([]Stmt{initializer, body}, keyword, ForBlock)
 	}
 
 	return body, nil
@@ -164,7 +173,8 @@ func (p *Parser) ifStatement() (Stmt, error) {
 		return nil, err
 	}
 
-	thenBranch, err := p.statement()
+	_, err = p.consume(LeftBraceTT, "Expect '{' for if then block")
+	thenBranch, err := p.blockStatement(IfBlock)
 	if err != nil {
 		return nil, err
 	}
@@ -175,6 +185,7 @@ func (p *Parser) ifStatement() (Stmt, error) {
 		if err != nil {
 			return nil, err
 		}
+		return NewIf(condition, thenBranch, elseBranch), nil
 	}
 	if p.match(ElseTT) {
 		_, err := p.consume(ColonTT, "Expect ':' after else.")
@@ -185,7 +196,11 @@ func (p *Parser) ifStatement() (Stmt, error) {
 		if err != nil {
 			return nil, err
 		}
-		elseBranch, err = p.statement()
+		_, err = p.consume(LeftBraceTT, "Expect '{' for if else block")
+		if err != nil {
+			return nil, err
+		}
+		elseBranch, err = p.blockStatement(IfBlock)
 		if err != nil {
 			return nil, err
 		}
@@ -238,7 +253,11 @@ func (p *Parser) whileStatement() (Stmt, error) {
 	if err != nil {
 		return nil, err
 	}
-	body, err := p.statement()
+	_, err = p.consume(LeftBraceTT, "Expect '{' for while body")
+	if err != nil {
+		return nil, err
+	}
+	body, err := p.blockStatement(WhileBlock)
 	if err != nil {
 		return nil, err
 	}
