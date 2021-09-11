@@ -1,5 +1,7 @@
 # TLPS (Toy Language Processing System)
 
+![workflow status](https://github.com/goropikari/tlps/actions/workflows/go.yml/badge.svg)
+
 TLPS is a toy language processing system for me to study.
 TLPS adopts [Off-side rule](https://en.wikipedia.org/wiki/Off-side_rule) like python.
 
