@@ -127,42 +127,39 @@ func (p *Parser) blockStatement(typ BlockType) (Stmt, error) {
 
 func (p *Parser) forStatement() (Stmt, error) {
 	var initializer Stmt
+	var err error
 	if p.match(SemicolonTT) {
 		initializer = nil
 	} else if p.match(VarTT) {
-		init, err := p.varDecralation()
+		initializer, err = p.varDecralation()
 		if err != nil {
 			return nil, err
 		}
-		initializer = init
 	} else {
-		init, err := p.expressionStatement()
+		initializer, err = p.expressionStatement()
 		if err != nil {
 			return nil, err
 		}
-		initializer = init
 	}
 
 	var condition Expr
 	if !p.check(SemicolonTT) {
-		cond, err := p.expression()
+		condition, err = p.expression()
 		if err != nil {
 			return nil, err
 		}
-		condition = cond
 	}
-	_, err := p.consume(SemicolonTT, "Expect ';' after loop condition")
+	_, err = p.consume(SemicolonTT, "Expect ';' after loop condition")
 	if err != nil {
 		return nil, err
 	}
 
 	var increment Expr
 	if !p.check(ColonTT) {
-		inc, err := p.expression()
+		increment, err = p.expression()
 		if err != nil {
 			return nil, err
 		}
-		increment = inc
 	}
 	_, err = p.consume(ColonTT, "Expect ':' after for clauses.")
 	if err != nil {
@@ -252,15 +249,15 @@ func (p *Parser) ifStatement() (Stmt, error) {
 func (p *Parser) returnStatement() (Stmt, error) {
 	keyword := p.previous()
 	var value Expr = nil
+	var err error
 	if !p.check(SemicolonTT) {
-		var err error
 		value, err = p.expression()
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	_, err := p.consumeTerm()
+	_, err = p.consumeTerm()
 	if err != nil {
 		return nil, err
 	}
@@ -306,7 +303,6 @@ func (p *Parser) varDecralation() (Stmt, error) {
 		}
 	}
 
-	// _, err = p.consume(Semicolon, "Expect ';' after variable declaration")
 	_, err = p.consumeTerm()
 	if err != nil {
 		return nil, err

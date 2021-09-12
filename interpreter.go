@@ -33,8 +33,8 @@ func (i *Interpreter) Interpret(statements []Stmt) (string, error) {
 	var s string
 	var err error
 	for _, statement := range statements {
-		v, er := i.execute(statement)
-		err = er
+		var v interface{}
+		v, err = i.execute(statement)
 		s = stringfy(v)
 		if err != nil {
 			i.Runtime.RuntimeError(err)
@@ -403,8 +403,8 @@ func (i *Interpreter) visitWhileStmt(stmt *While) (interface{}, error) {
 func (i *Interpreter) visitVarStmt(stmt *Var) (interface{}, error) {
 	var value interface{} = nil
 	if stmt.Initializer != nil {
-		v, err := i.evaluate(stmt.Initializer)
-		value = v
+		var err error
+		value, err = i.evaluate(stmt.Initializer)
 		if err != nil {
 			return nil, err
 		}
