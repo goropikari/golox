@@ -1,0 +1,23 @@
+fun test(expected, actual):
+    if expected != actual:
+        print "expected "
+        print expected
+        print "\n"
+        print "actual "
+        print actual
+        print "\n"
+        exit(1)
+
+class Hoge:
+    hoge(x, y):
+        return x + y
+
+test(4, Hoge().hoge(1, 3))
+
+
+class Piyo:
+    init(name):
+        this.name = name
+
+var p = Piyo("piyo")
+test("piyo", p.name)

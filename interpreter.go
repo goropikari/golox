@@ -3,6 +3,8 @@ package tlps
 import (
 	"fmt"
 	"reflect"
+
+	"github.com/goropikari/tlps/native_function"
 )
 
 // Interpreter is struct of interpreter
@@ -14,7 +16,8 @@ type Interpreter struct {
 func NewInterpreter(runtime *Runtime) *Interpreter {
 	globals := runtime.Globals
 
-	globals.Define("clock", NewClockFunc())
+	globals.Define("clock", NewNativeFunction(native_function.NewClockFunc()))
+	globals.Define("exit", NewNativeFunction(native_function.NewExitFunc()))
 
 	return &Interpreter{
 		Runtime: runtime,
@@ -73,17 +76,19 @@ func (i *Interpreter) visitBinaryExpr(expr *Binary) (interface{}, error) {
 		}
 		return left.(float64) <= right.(float64), nil
 	case BangEqualTT:
-		err := checkNumberOperands(expr.Operator, left, right)
-		if err != nil {
-			return nil, err
-		}
-		return left.(float64) != right.(float64), nil
+		// err := checkNumberOperands(expr.Operator, left, right)
+		// if err != nil {
+		// 	return nil, err
+		// }
+		// return left.(float64) != right.(float64), nil
+		return left != right, nil
 	case EqualEqualTT:
-		err := checkNumberOperands(expr.Operator, left, right)
-		if err != nil {
-			return nil, err
-		}
-		return left.(float64) == right.(float64), nil
+		// err := checkNumberOperands(expr.Operator, left, right)
+		// if err != nil {
+		// 	return nil, err
+		// }
+		// return left.(float64) == right.(float64), nil
+		return left == right, nil
 	case MinusTT:
 		err := checkNumberOperands(expr.Operator, left, right)
 		if err != nil {
@@ -356,7 +361,7 @@ func (i *Interpreter) visitPrintStmt(stmt *Print) (interface{}, error) {
 		return nil, err
 	}
 
-	fmt.Println(stringfy(value))
+	fmt.Print(stringfy(value))
 	return nil, nil
 }
 

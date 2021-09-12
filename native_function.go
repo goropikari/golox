@@ -1,25 +1,29 @@
 package tlps
 
-import "time"
-
-// ClockFunc is struct of clock function
-type ClockFunc struct{}
-
-// NewClockFunc is constructor of ClockFunc
-func NewClockFunc() *ClockFunc {
-	return &ClockFunc{}
+// NativeCallable is interface to call native function
+type NativeCallable interface {
+	Call([]interface{}) (interface{}, error)
+	Arity() int
 }
 
-// Arity returns 0
-func (cf *ClockFunc) Arity() int {
-	return 0
+// NativeFunction is struct for native function
+type NativeFunction struct {
+	Function NativeCallable
 }
 
-// Call return now time
-func (cf *ClockFunc) Call(interpreter *Interpreter, arguments []interface{}) (interface{}, error) {
-	return float64(time.Now().Unix()), nil
+// NewNativeFunction is constructor of NativeFunction
+func NewNativeFunction(function NativeCallable) TLPSCallable {
+	return &NativeFunction{
+		Function: function,
+	}
 }
 
-func (cf *ClockFunc) String() string {
-	return "<native fn>"
+// Call calls native function
+func (nf *NativeFunction) Call(i *Interpreter, args []interface{}) (interface{}, error) {
+	return nf.Function.Call(args)
+}
+
+// Arity returns arity of native function
+func (nf *NativeFunction) Arity() int {
+	return nf.Function.Arity()
 }
