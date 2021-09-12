@@ -100,9 +100,6 @@ func (p *Parser) statement() (Stmt, error) {
 	if p.match(IfTT) {
 		return p.ifStatement()
 	}
-	if p.match(PrintTT) {
-		return p.printStatement()
-	}
 	if p.match(ReturnTT) {
 		return p.returnStatement()
 	}
@@ -247,19 +244,6 @@ func (p *Parser) ifStatement() (Stmt, error) {
 	}
 
 	return NewIf(condition, thenBranch, elseBranch), nil
-}
-
-func (p *Parser) printStatement() (Stmt, error) {
-	value, err := p.expression()
-	if err != nil {
-		return nil, err
-	}
-	_, err = p.consumeTerm()
-	if err != nil {
-		return nil, err
-	}
-
-	return NewPrint(value), nil
 }
 
 func (p *Parser) returnStatement() (Stmt, error) {
@@ -763,8 +747,6 @@ func (p *Parser) synchronize() {
 		case IfTT:
 			return
 		case WhileTT:
-			return
-		case PrintTT:
 			return
 		case ReturnTT:
 			return

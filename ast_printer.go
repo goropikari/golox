@@ -39,8 +39,6 @@ func (ap *AstPrinter) visitCallExpr(expr *Call) (interface{}, error) {
 		args = append(args, arg)
 	}
 
-	fmt.Println("hoge", callee, args)
-
 	return callee + "(args " + strings.Join(args, "))"), nil
 }
 
@@ -162,10 +160,6 @@ func (ap *AstPrinter) visitIfStmt(i *If) (interface{}, error) {
 	}
 
 	return "(if " + cond + " " + thenBranch + " " + elseBranch + ")", nil
-}
-
-func (ap *AstPrinter) visitPrintStmt(p *Print) (interface{}, error) {
-	return ap.parenthesizeExpr("print", p.Expression)
 }
 
 func (ap *AstPrinter) visitReturnStmt(r *Return) (interface{}, error) {

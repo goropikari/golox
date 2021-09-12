@@ -18,6 +18,7 @@ func NewInterpreter(runtime *Runtime) *Interpreter {
 
 	globals.Define("clock", NewNativeFunction(native_function.NewClockFunc()))
 	globals.Define("exit", NewNativeFunction(native_function.NewExitFunc()))
+	globals.Define("print", NewNativeFunction(native_function.NewPrintFunc()))
 
 	return &Interpreter{
 		Runtime: runtime,
@@ -142,7 +143,9 @@ func (i *Interpreter) visitCallExpr(expr *Call) (interface{}, error) {
 		return nil, RuntimeError.New(expr.Paren, "Can only call functions and classes.")
 	}
 
-	if len(arguments) != function.Arity() {
+	if function.Arity() == -1 {
+		return function.Call(i, arguments)
+	} else if len(arguments) != function.Arity() {
 		return nil, RuntimeError.New(expr.Paren, fmt.Sprintf("Expected %d arguments but got %d.", function.Arity(), len(arguments)))
 	}
 
@@ -352,16 +355,6 @@ func (i *Interpreter) visitIfStmt(stmt *If) (interface{}, error) {
 	} else if stmt.ElseBranch != nil {
 		return i.execute(stmt.ElseBranch)
 	}
-	return nil, nil
-}
-
-func (i *Interpreter) visitPrintStmt(stmt *Print) (interface{}, error) {
-	value, err := i.evaluate(stmt.Expression)
-	if err != nil {
-		return nil, err
-	}
-
-	fmt.Print(stringfy(value))
 	return nil, nil
 }
 

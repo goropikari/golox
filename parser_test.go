@@ -42,13 +42,23 @@ func TestParser(t *testing.T) {
 			},
 		},
 		{
-			name: "if true:\n  print 1",
+			name: "if true:\n  print(1)",
 			expected: []tlps.Stmt{
 				tlps.NewIf(
 					tlps.NewLiteral(true),
 					tlps.NewBlock(
 						[]tlps.Stmt{
-							tlps.NewPrint(tlps.NewLiteral(1.0)),
+							tlps.NewExpression(
+								tlps.NewCall(
+									tlps.NewVariable(
+										tlps.NewToken(tlps.IdentifierTT, "print", nil, 2),
+									),
+									tlps.NewToken(tlps.RightParenTT, ")", nil, 2),
+									[]tlps.Expr{
+										tlps.NewLiteral(1.0),
+									},
+								),
+							),
 						},
 						tlps.NewToken(tlps.LeftBraceTT, "{", nil, 2),
 						tlps.IfBlock,
@@ -62,28 +72,50 @@ func TestParser(t *testing.T) {
 				tlps.NewToken(tlps.ColonTT, ":", nil, 1),
 				tlps.NewToken(tlps.NewlineTT, "\n", nil, 1),
 				tlps.NewToken(tlps.LeftBraceTT, "{", nil, 2),
-				tlps.NewToken(tlps.PrintTT, "print", nil, 2),
+				tlps.NewToken(tlps.IdentifierTT, "print", nil, 2),
+				tlps.NewToken(tlps.LeftParenTT, "(", nil, 2),
 				tlps.NewToken(tlps.NumberTT, "1", 1.0, 2),
+				tlps.NewToken(tlps.RightParenTT, ")", nil, 2),
 				tlps.NewToken(tlps.NewlineTT, "\n", nil, 1),
 				tlps.NewToken(tlps.RightBraceTT, "}", nil, 2),
 				tlps.NewToken(tlps.EOFTT, "", nil, 1),
 			},
 		},
 		{
-			name: "if true:\n  print 1\nelse:\n  print 2\n",
+			name: "if true:\n  print(1)\nelse:\n  print(2)\n",
 			expected: []tlps.Stmt{
 				tlps.NewIf(
 					tlps.NewLiteral(true),
 					tlps.NewBlock(
 						[]tlps.Stmt{
-							tlps.NewPrint(tlps.NewLiteral(1.0)),
+							tlps.NewExpression(
+								tlps.NewCall(
+									tlps.NewVariable(
+										tlps.NewToken(tlps.IdentifierTT, "print", nil, 2),
+									),
+									tlps.NewToken(tlps.RightParenTT, ")", nil, 2),
+									[]tlps.Expr{
+										tlps.NewLiteral(1.0),
+									},
+								),
+							),
 						},
 						tlps.NewToken(tlps.LeftBraceTT, "{", nil, 2),
 						tlps.IfBlock,
 					),
 					tlps.NewBlock(
 						[]tlps.Stmt{
-							tlps.NewPrint(tlps.NewLiteral(2.0)),
+							tlps.NewExpression(
+								tlps.NewCall(
+									tlps.NewVariable(
+										tlps.NewToken(tlps.IdentifierTT, "print", nil, 4),
+									),
+									tlps.NewToken(tlps.RightParenTT, ")", nil, 4),
+									[]tlps.Expr{
+										tlps.NewLiteral(2.0),
+									},
+								),
+							),
 						},
 						tlps.NewToken(tlps.LeftBraceTT, "{", nil, 4),
 						tlps.IfBlock,
@@ -97,8 +129,10 @@ func TestParser(t *testing.T) {
 				tlps.NewToken(tlps.ColonTT, ":", nil, 1),
 				tlps.NewToken(tlps.NewlineTT, "\n", nil, 1),
 				tlps.NewToken(tlps.LeftBraceTT, "{", nil, 2),
-				tlps.NewToken(tlps.PrintTT, "print", nil, 2),
+				tlps.NewToken(tlps.IdentifierTT, "print", nil, 2),
+				tlps.NewToken(tlps.LeftParenTT, "(", nil, 2),
 				tlps.NewToken(tlps.NumberTT, "1", 1.0, 2),
+				tlps.NewToken(tlps.RightParenTT, ")", nil, 2),
 				tlps.NewToken(tlps.NewlineTT, "\n", nil, 1),
 				tlps.NewToken(tlps.RightBraceTT, "}", nil, 2),
 
@@ -107,15 +141,17 @@ func TestParser(t *testing.T) {
 				tlps.NewToken(tlps.ColonTT, ":", nil, 2),
 				tlps.NewToken(tlps.NewlineTT, "\n", nil, 2),
 				tlps.NewToken(tlps.LeftBraceTT, "{", nil, 4),
-				tlps.NewToken(tlps.PrintTT, "print", nil, 4),
+				tlps.NewToken(tlps.IdentifierTT, "print", nil, 4),
+				tlps.NewToken(tlps.LeftParenTT, "(", nil, 4),
 				tlps.NewToken(tlps.NumberTT, "2", 2.0, 4),
+				tlps.NewToken(tlps.RightParenTT, ")", nil, 4),
 				tlps.NewToken(tlps.NewlineTT, "\n", nil, 4),
 				tlps.NewToken(tlps.RightBraceTT, "}", nil, 4),
 				tlps.NewToken(tlps.EOFTT, "", nil, 4),
 			},
 		},
 		{
-			name: "for var i = 0; i < 5; i = i + 1:\n  print i\n",
+			name: "for var i = 0; i < 5; i = i + 1:\n  print(i)\n",
 			expected: []tlps.Stmt{
 				tlps.NewBlock(
 					[]tlps.Stmt{
@@ -133,9 +169,17 @@ func TestParser(t *testing.T) {
 								[]tlps.Stmt{
 									tlps.NewBlock(
 										[]tlps.Stmt{
-											tlps.NewPrint(
-												tlps.NewVariable(
-													tlps.NewToken(tlps.IdentifierTT, "i", nil, 2),
+											tlps.NewExpression(
+												tlps.NewCall(
+													tlps.NewVariable(
+														tlps.NewToken(tlps.IdentifierTT, "print", nil, 2),
+													),
+													tlps.NewToken(tlps.RightParenTT, ")", nil, 2),
+													[]tlps.Expr{
+														tlps.NewVariable(
+															tlps.NewToken(tlps.IdentifierTT, "i", nil, 2),
+														),
+													},
 												),
 											),
 										},
@@ -183,8 +227,10 @@ func TestParser(t *testing.T) {
 				tlps.NewToken(tlps.ColonTT, ":", nil, 1),
 				tlps.NewToken(tlps.NewlineTT, "\n", nil, 1),
 				tlps.NewToken(tlps.LeftBraceTT, "{", nil, 2),
-				tlps.NewToken(tlps.PrintTT, "print", nil, 2),
+				tlps.NewToken(tlps.IdentifierTT, "print", nil, 2),
+				tlps.NewToken(tlps.LeftParenTT, "(", nil, 2),
 				tlps.NewToken(tlps.IdentifierTT, "i", nil, 2),
+				tlps.NewToken(tlps.RightParenTT, ")", nil, 2),
 				tlps.NewToken(tlps.NewlineTT, "\n", nil, 2),
 				tlps.NewToken(tlps.RightBraceTT, "}", nil, 2),
 				tlps.NewToken(tlps.EOFTT, "", nil, 2),

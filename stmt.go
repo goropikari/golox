@@ -11,7 +11,6 @@ type VisitorStmt interface {
 	visitExpressionStmt(*Expression) (interface{}, error)
 	visitFunctionStmt(*Function) (interface{}, error)
 	visitIfStmt(*If) (interface{}, error)
-	visitPrintStmt(*Print) (interface{}, error)
 	visitReturnStmt(*Return) (interface{}, error)
 	visitVarStmt(*Var) (interface{}, error)
 	visitWhileStmt(*While) (interface{}, error)
@@ -119,26 +118,6 @@ func (i *If) Accept(visitor VisitorStmt) (interface{}, error) {
 func (rec *If) IsType(v interface{}) bool {
 	switch v.(type) {
 	case *If:
-		return true
-	}
-	return false
-}
-
-type Print struct {
-	Expression Expr
-}
-
-func NewPrint(expression Expr) Stmt {
-	return &Print{expression}
-}
-
-func (p *Print) Accept(visitor VisitorStmt) (interface{}, error) {
-	return visitor.visitPrintStmt(p)
-}
-
-func (rec *Print) IsType(v interface{}) bool {
-	switch v.(type) {
-	case *Print:
 		return true
 	}
 	return false

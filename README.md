@@ -22,7 +22,7 @@ Architecture is based on jlox (tree-walk interpreter) by [munificent/craftingint
 var x = 10; // terminal ';' is optional
 
 var こんにちは = "Hello World"
-print こんにちは // => Hello World
+print(こんにちは) // => Hello World
 
 // if statement
 if expr:
@@ -38,7 +38,7 @@ while expr:
 
 // for loop
 for var i = 0; i < 5; i = i + 1:
-  print i
+  print(i)
 
 // function
 fun fib(n):
@@ -55,8 +55,8 @@ fun makeCounter():
   return count
 
 var counter = makeCounter()
-print counter() // => 1
-print counter() // => 2
+print(counter()) // => 1
+print(counter()) // => 2
 
 # class
 # there is no class variable
@@ -74,11 +74,11 @@ class Hoge:
 
 class Hoge:
   piyo(x, y):
-    print x + y
+    print(x + y)
 
 var h = Hoge()
 h.name = "hoge piyo" // instance variable can define anytime
-print h.name // => hoge piyo
+print(h.name) // => hoge piyo
 
 // indentation can be used for if branch, loop body and function body
 var x = 1

@@ -80,19 +80,22 @@ func TestAstPrinter(t *testing.T) {
 			},
 		},
 		{
-			name:     "print 123",
-			expected: "(print 123)",
-			given: []tlps.Stmt{
-				tlps.NewPrint(tlps.NewLiteral(123)),
-			},
-		},
-		{
 			name:     "while statement",
-			expected: "(while (cond 123) (body (print 123)))",
+			expected: "(while (cond 123) (body (callee (variable print))(args (arg 123)))",
 			given: []tlps.Stmt{
 				tlps.NewWhile(
 					tlps.NewLiteral(123),
-					tlps.NewPrint(tlps.NewLiteral(123)),
+					tlps.NewExpression(
+						tlps.NewCall(
+							tlps.NewVariable(
+								tlps.NewToken(tlps.IdentifierTT, "print", nil, 2),
+							),
+							tlps.NewToken(tlps.RightParenTT, ")", nil, 2),
+							[]tlps.Expr{
+								tlps.NewLiteral(123.0),
+							},
+						),
+					),
 				),
 			},
 		},

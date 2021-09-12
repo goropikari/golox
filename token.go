@@ -49,7 +49,6 @@ const (
 	NilTT
 	OrTT
 	PassTT
-	PrintTT
 	ReturnTT
 	SuperTT
 	ThisTT

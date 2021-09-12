@@ -1,11 +1,11 @@
 fun test(expected, actual):
     if expected != actual:
-        print "expected "
-        print expected
-        print "\n"
-        print "actual "
-        print actual
-        print "\n"
+        print("expected ")
+        print(expected)
+        print("\n")
+        print("actual ")
+        print(actual)
+        print("\n")
         exit(1)
 
 fun f():

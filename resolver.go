@@ -104,10 +104,6 @@ func (r *Resolver) visitIfStmt(stmt *If) (interface{}, error) {
 	return nil, nil
 }
 
-func (r *Resolver) visitPrintStmt(stmt *Print) (interface{}, error) {
-	return r.resolveExpr(stmt.Expression)
-}
-
 func (r *Resolver) visitReturnStmt(stmt *Return) (interface{}, error) {
 	if r.currentFunction == NoneFT {
 		r.runtime.ErrorTokenMessage(stmt.Keyword, "Can't return from top-level code.")
