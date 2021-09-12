@@ -9,9 +9,12 @@ type VisitorExpr interface {
 	visitAssignExpr(*Assign) (interface{}, error)
 	visitBinaryExpr(*Binary) (interface{}, error)
 	visitCallExpr(*Call) (interface{}, error)
+	visitGetExpr(*Get) (interface{}, error)
 	visitGroupingExpr(*Grouping) (interface{}, error)
 	visitLiteralExpr(*Literal) (interface{}, error)
 	visitLogicalExpr(*Logical) (interface{}, error)
+	visitSetExpr(*Set) (interface{}, error)
+	visitThisExpr(*This) (interface{}, error)
 	visitUnaryExpr(*Unary) (interface{}, error)
 	visitVariableExpr(*Variable) (interface{}, error)
 }
@@ -81,6 +84,27 @@ func (rec *Call) IsType(v interface{}) bool {
 	return false
 }
 
+type Get struct {
+	Object Expr
+	Name   *Token
+}
+
+func NewGet(object Expr, name *Token) Expr {
+	return &Get{object, name}
+}
+
+func (g *Get) Accept(visitor VisitorExpr) (interface{}, error) {
+	return visitor.visitGetExpr(g)
+}
+
+func (rec *Get) IsType(v interface{}) bool {
+	switch v.(type) {
+	case *Get:
+		return true
+	}
+	return false
+}
+
 type Grouping struct {
 	Expression Expr
 }
@@ -138,6 +162,48 @@ func (l *Logical) Accept(visitor VisitorExpr) (interface{}, error) {
 func (rec *Logical) IsType(v interface{}) bool {
 	switch v.(type) {
 	case *Logical:
+		return true
+	}
+	return false
+}
+
+type Set struct {
+	Object Expr
+	Name   *Token
+	Value  Expr
+}
+
+func NewSet(object Expr, name *Token, value Expr) Expr {
+	return &Set{object, name, value}
+}
+
+func (s *Set) Accept(visitor VisitorExpr) (interface{}, error) {
+	return visitor.visitSetExpr(s)
+}
+
+func (rec *Set) IsType(v interface{}) bool {
+	switch v.(type) {
+	case *Set:
+		return true
+	}
+	return false
+}
+
+type This struct {
+	Keyword *Token
+}
+
+func NewThis(keyword *Token) Expr {
+	return &This{keyword}
+}
+
+func (t *This) Accept(visitor VisitorExpr) (interface{}, error) {
+	return visitor.visitThisExpr(t)
+}
+
+func (rec *This) IsType(v interface{}) bool {
+	switch v.(type) {
+	case *This:
 		return true
 	}
 	return false

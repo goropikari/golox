@@ -144,6 +144,18 @@ func (i *Interpreter) visitCallExpr(expr *Call) (interface{}, error) {
 	return function.Call(i, arguments)
 }
 
+func (i *Interpreter) visitGetExpr(expr *Get) (interface{}, error) {
+	object, err := i.evaluate(expr.Object)
+	if err != nil {
+		return nil, err
+	}
+	if _, ok := object.(*LoxInstance); ok {
+		return object.(*LoxInstance).Get(expr.Name)
+	}
+
+	return nil, RuntimeError.New(expr.Name, "Only instances have properties.")
+}
+
 func (i *Interpreter) visitLiteralExpr(expr *Literal) (interface{}, error) {
 	return expr.Value, nil
 }
@@ -165,6 +177,30 @@ func (i *Interpreter) visitLogicalExpr(expr *Logical) (interface{}, error) {
 	}
 
 	return i.evaluate(expr.Right)
+}
+
+func (i *Interpreter) visitSetExpr(expr *Set) (interface{}, error) {
+	object, err := i.evaluate(expr.Object)
+	if err != nil {
+		return nil, err
+	}
+
+	if _, ok := object.(*LoxInstance); !ok {
+		return nil, RuntimeError.New(expr.Name, "Only instances have fields.")
+	}
+
+	value, err := i.evaluate(expr.Value)
+	if err != nil {
+		return nil, err
+	}
+	li := object.(*LoxInstance)
+	li.Set(expr.Name, value)
+
+	return value, nil
+}
+
+func (i *Interpreter) visitThisExpr(expr *This) (interface{}, error) {
+	return i.lookUpVariable(expr.Keyword, expr)
 }
 
 func (i *Interpreter) visitGroupingExpr(expr *Grouping) (interface{}, error) {
@@ -264,6 +300,21 @@ func (i *Interpreter) visitBlockStmt(stmt *Block) (interface{}, error) {
 	return i.executeBlock(stmt.Statements, NewEnvironment(i.Runtime.Environment))
 }
 
+func (i *Interpreter) visitClassStmt(stmt *Class) (interface{}, error) {
+	i.Runtime.Environment.Define(stmt.Name.Lexeme, nil)
+
+	methods := make(map[string]*LoxFunction)
+	for _, method := range stmt.Methods {
+		function := NewLoxFunction(method, i.Runtime.Environment, method.Name.Lexeme == "init")
+		methods[method.Name.Lexeme] = function
+	}
+
+	klass := NewLoxClass(stmt.Name.Lexeme, methods)
+	i.Runtime.Environment.Assign(stmt.Name, klass)
+
+	return nil, nil
+}
+
 func isEqual(a, b interface{}) bool {
 	if a == nil && b == nil {
 		return true
@@ -281,7 +332,7 @@ func (i *Interpreter) visitExpressionStmt(stmt *Expression) (interface{}, error)
 }
 
 func (i *Interpreter) visitFunctionStmt(stmt *Function) (interface{}, error) {
-	function := NewLoxFunction(stmt, i.Runtime.Environment)
+	function := NewLoxFunction(stmt, i.Runtime.Environment, false)
 	i.Runtime.Environment.Define(stmt.Name.Lexeme, function)
 	return nil, nil
 }

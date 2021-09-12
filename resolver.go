@@ -9,17 +9,24 @@ type Resolver struct {
 	runtime         *Runtime
 	Interpreter     *Interpreter
 	currentFunction FunctionType
+	currentClass    ClassType
 }
 
 // FunctionType is current scope function type
 type FunctionType int
 
 const (
-	// NoneFT is not in function
 	NoneFT FunctionType = iota
-
-	// FunctionFT is in function
 	FunctionFT
+	InitializerFT
+	MethodFT
+)
+
+type ClassType int
+
+const (
+	NoneCT ClassType = iota
+	ClassCT
 )
 
 // NewResolver is constructor of Resolver
@@ -28,6 +35,7 @@ func NewResolver(runtime *Runtime, interpreter *Interpreter) *Resolver {
 		runtime:         runtime,
 		Interpreter:     interpreter,
 		currentFunction: NoneFT,
+		currentClass:    NoneCT,
 	}
 }
 
@@ -38,6 +46,30 @@ func (r *Resolver) visitBlockStmt(stmt *Block) (interface{}, error) {
 	r.beginScope()
 	r.ResolveStmts(stmt.Statements)
 	r.endScope()
+	return nil, nil
+}
+
+func (r *Resolver) visitClassStmt(stmt *Class) (interface{}, error) {
+	enclosigClass := r.currentClass
+	r.currentClass = ClassCT
+
+	r.declare(stmt.Name)
+	r.define(stmt.Name)
+
+	r.beginScope()
+	r.runtime.Scopes.Peek()["this"] = true
+
+	for _, method := range stmt.Methods {
+		declaration := MethodFT
+		if method.Name.Lexeme == "init" {
+			declaration = InitializerFT
+		}
+		r.resolveFunction(method, declaration)
+	}
+
+	r.endScope()
+
+	r.currentClass = enclosigClass
 	return nil, nil
 }
 
@@ -82,6 +114,10 @@ func (r *Resolver) visitReturnStmt(stmt *Return) (interface{}, error) {
 	}
 
 	if stmt.Value != nil {
+		if r.currentFunction == InitializerFT {
+			r.runtime.ErrorTokenMessage(stmt.Keyword, "Can't return a value from an initializer.")
+		}
+
 		_, err := r.resolveExpr(stmt.Value)
 		if err != nil {
 			return nil, err
@@ -148,6 +184,14 @@ func (r *Resolver) visitCallExpr(expr *Call) (interface{}, error) {
 	return nil, nil
 }
 
+func (r *Resolver) visitGetExpr(expr *Get) (interface{}, error) {
+	_, err := r.resolveExpr(expr.Object)
+	if err != nil {
+		return nil, err
+	}
+	return nil, nil
+}
+
 func (r *Resolver) visitGroupingExpr(expr *Grouping) (interface{}, error) {
 	_, err := r.resolveExpr(expr.Expression)
 	if err != nil {
@@ -169,6 +213,28 @@ func (r *Resolver) visitLogicalExpr(expr *Logical) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
+	return nil, nil
+}
+
+func (r *Resolver) visitSetExpr(expr *Set) (interface{}, error) {
+	_, err := r.resolveExpr(expr.Value)
+	if err != nil {
+		return nil, err
+	}
+	_, err = r.resolveExpr(expr.Object)
+	if err != nil {
+		return nil, err
+	}
+	return nil, nil
+}
+
+func (r *Resolver) visitThisExpr(expr *This) (interface{}, error) {
+	if r.currentClass == NoneCT {
+		r.runtime.ErrorTokenMessage(expr.Keyword, "Can't use 'this' outside of a class.")
+		return nil, nil
+	}
+
+	r.resolveLocal(expr, expr.Keyword)
 	return nil, nil
 }
 

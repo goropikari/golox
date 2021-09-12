@@ -58,6 +58,28 @@ var counter = makeCounter()
 print counter() // => 1
 print counter() // => 2
 
+# class
+# there is no class variable
+class Hoge:
+  pass
+
+class Hoge:
+  hoge(x, y):
+    pass
+
+class Hoge:
+  init(x, y):
+    this.x = x
+    this.y = y
+
+class Hoge:
+  piyo(x, y):
+    print x + y
+
+var h = Hoge()
+h.name = "hoge piyo" // instance variable can define anytime
+print h.name // => hoge piyo
+
 // indentation can be used for if branch, loop body and function body
 var x = 1
   var y = 1  // indentation error

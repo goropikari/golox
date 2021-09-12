@@ -98,7 +98,7 @@ func TestAstPrinter(t *testing.T) {
 		},
 		{
 			name:     "declare variable: var x = 123",
-			expected: "(declare x (init 123))",
+			expected: "(declare x (initializer 123))",
 			given: []tlps.Stmt{
 				tlps.NewVar(
 					tlps.NewToken(tlps.IdentifierTT, "x", nil, 1),
@@ -123,7 +123,7 @@ func TestAstPrinter(t *testing.T) {
 		},
 		{
 			name:     "function",
-			expected: "(function (args (x, y)) (body (1) (2)))",
+			expected: "(function f (args (x, y)) (body (1) (2)))",
 			given: []tlps.Stmt{
 				tlps.NewFunction(
 					tlps.NewToken(tlps.IdentifierTT, "f", nil, 1),
@@ -134,6 +134,39 @@ func TestAstPrinter(t *testing.T) {
 					[]tlps.Stmt{
 						tlps.NewExpression(tlps.NewLiteral(1)),
 						tlps.NewExpression(tlps.NewLiteral(2)),
+					},
+				),
+			},
+		},
+		{
+			name:     "class",
+			expected: "(class Hoge (function init (args (x)) (body ((set (object (this))(name x)(value (variable x)))))))",
+			given: []tlps.Stmt{
+				// class Hoge:
+				//   init(x):
+				//     this.x = x
+				tlps.NewClass(
+					tlps.NewToken(tlps.IdentifierTT, "Hoge", nil, 1),
+					[]*tlps.Function{
+						tlps.NewFunction(
+							tlps.NewToken(tlps.IdentifierTT, "init", nil, 2),
+							[]*tlps.Token{
+								tlps.NewToken(tlps.IdentifierTT, "x", nil, 2),
+							},
+							[]tlps.Stmt{
+								tlps.NewExpression(
+									tlps.NewSet(
+										tlps.NewThis(
+											tlps.NewToken(tlps.ThisTT, "this", nil, 3),
+										),
+										tlps.NewToken(tlps.IdentifierTT, "x", nil, 3),
+										tlps.NewVariable(
+											tlps.NewToken(tlps.IdentifierTT, "x", nil, 3),
+										),
+									),
+								),
+							},
+						).(*tlps.Function),
 					},
 				),
 			},

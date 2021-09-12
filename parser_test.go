@@ -1,6 +1,7 @@
 package tlps_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/goropikari/tlps"
@@ -232,6 +233,61 @@ func TestParser(t *testing.T) {
 				tlps.NewToken(tlps.EOFTT, "", nil, 2),
 			},
 		},
+		{
+			name: "class",
+			expected: []tlps.Stmt{
+				// class Hoge:
+				//   init(x):
+				//     this.x = x
+				tlps.NewClass(
+					tlps.NewToken(tlps.IdentifierTT, "Hoge", nil, 1),
+					[]*tlps.Function{
+						tlps.NewFunction(
+							tlps.NewToken(tlps.IdentifierTT, "init", nil, 2),
+							[]*tlps.Token{
+								tlps.NewToken(tlps.IdentifierTT, "x", nil, 2),
+							},
+							[]tlps.Stmt{
+								tlps.NewExpression(
+									tlps.NewSet(
+										tlps.NewThis(
+											tlps.NewToken(tlps.ThisTT, "this", nil, 3),
+										),
+										tlps.NewToken(tlps.IdentifierTT, "x", nil, 3),
+										tlps.NewVariable(
+											tlps.NewToken(tlps.IdentifierTT, "x", nil, 3),
+										),
+									),
+								),
+							},
+						).(*tlps.Function),
+					},
+				),
+			},
+			given: []*tlps.Token{
+				tlps.NewToken(tlps.ClassTT, "class", nil, 1),
+				tlps.NewToken(tlps.IdentifierTT, "Hoge", nil, 1),
+				tlps.NewToken(tlps.ColonTT, ":", nil, 1),
+				tlps.NewToken(tlps.NewlineTT, "\n", nil, 1),
+				tlps.NewToken(tlps.LeftBraceTT, "{", nil, 2),
+				tlps.NewToken(tlps.IdentifierTT, "init", nil, 2),
+				tlps.NewToken(tlps.LeftParenTT, "(", nil, 2),
+				tlps.NewToken(tlps.IdentifierTT, "x", nil, 2),
+				tlps.NewToken(tlps.RightParenTT, ")", nil, 2),
+				tlps.NewToken(tlps.ColonTT, ":", nil, 2),
+				tlps.NewToken(tlps.NewlineTT, "\n", nil, 2),
+				tlps.NewToken(tlps.LeftBraceTT, "{", nil, 3),
+				tlps.NewToken(tlps.ThisTT, "this", nil, 3),
+				tlps.NewToken(tlps.DotTT, ".", nil, 3),
+				tlps.NewToken(tlps.IdentifierTT, "x", nil, 3),
+				tlps.NewToken(tlps.EqualTT, "=", nil, 3),
+				tlps.NewToken(tlps.IdentifierTT, "x", nil, 3),
+				tlps.NewToken(tlps.NewlineTT, "\n", nil, 3),
+				tlps.NewToken(tlps.RightBraceTT, "}", nil, 3),
+				tlps.NewToken(tlps.RightBraceTT, "}", nil, 3),
+				tlps.NewToken(tlps.EOFTT, "", nil, 3),
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -239,9 +295,9 @@ func TestParser(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			parser := tlps.NewParser(r, tt.given)
 			actual, _ := parser.Parse()
-			// ast := tlps.NewAstPrinter()
-			// fmt.Println(ast.Print(actual))
-			// fmt.Println(ast.Print(tt.expected))
+			ast := tlps.NewAstPrinter()
+			fmt.Println(ast.Print(actual))
+			fmt.Println(ast.Print(tt.expected))
 			assert.Equal(t, tt.expected, actual)
 		})
 	}

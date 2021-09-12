@@ -79,6 +79,55 @@ func TestInterpreter(t *testing.T) {
 				),
 			},
 		},
+
+		{
+			name:     "class",
+			expected: "hoge",
+			given: []tlps.Stmt{
+				// class Hoge:
+				//   init(x):
+				//     this.x = x
+				// Hoge("hoge").x
+				tlps.NewClass(
+					tlps.NewToken(tlps.IdentifierTT, "Hoge", nil, 1),
+					[]*tlps.Function{
+						tlps.NewFunction(
+							tlps.NewToken(tlps.IdentifierTT, "init", nil, 2),
+							[]*tlps.Token{
+								tlps.NewToken(tlps.IdentifierTT, "x", nil, 2),
+							},
+							[]tlps.Stmt{
+								tlps.NewExpression(
+									tlps.NewSet(
+										tlps.NewThis(
+											tlps.NewToken(tlps.ThisTT, "this", nil, 3),
+										),
+										tlps.NewToken(tlps.IdentifierTT, "x", nil, 3),
+										tlps.NewVariable(
+											tlps.NewToken(tlps.IdentifierTT, "x", nil, 3),
+										),
+									),
+								),
+							},
+						).(*tlps.Function),
+					},
+				),
+				tlps.NewExpression(
+					tlps.NewGet(
+						tlps.NewCall(
+							tlps.NewVariable(
+								tlps.NewToken(tlps.IdentifierTT, "Hoge", nil, 4),
+							),
+							tlps.NewToken(tlps.LeftParenTT, "(", nil, 4),
+							[]tlps.Expr{
+								tlps.NewLiteral("hoge"),
+							},
+						),
+						tlps.NewToken(tlps.IdentifierTT, "x", nil, 4),
+					),
+				),
+			},
+		},
 		{
 			name:     "scope resolution",
 			expected: "20",

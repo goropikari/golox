@@ -7,6 +7,7 @@ type Stmt interface {
 
 type VisitorStmt interface {
 	visitBlockStmt(*Block) (interface{}, error)
+	visitClassStmt(*Class) (interface{}, error)
 	visitExpressionStmt(*Expression) (interface{}, error)
 	visitFunctionStmt(*Function) (interface{}, error)
 	visitIfStmt(*If) (interface{}, error)
@@ -33,6 +34,27 @@ func (b *Block) Accept(visitor VisitorStmt) (interface{}, error) {
 func (rec *Block) IsType(v interface{}) bool {
 	switch v.(type) {
 	case *Block:
+		return true
+	}
+	return false
+}
+
+type Class struct {
+	Name    *Token
+	Methods []*Function
+}
+
+func NewClass(name *Token, methods []*Function) Stmt {
+	return &Class{name, methods}
+}
+
+func (c *Class) Accept(visitor VisitorStmt) (interface{}, error) {
+	return visitor.visitClassStmt(c)
+}
+
+func (rec *Class) IsType(v interface{}) bool {
+	switch v.(type) {
+	case *Class:
 		return true
 	}
 	return false

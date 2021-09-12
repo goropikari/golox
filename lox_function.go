@@ -2,15 +2,17 @@ package tlps
 
 // LoxFunction is struct of lox function
 type LoxFunction struct {
-	declaration *Function
-	closure     *Environment
+	declaration   *Function
+	closure       *Environment
+	IsInitializer bool
 }
 
 // NewLoxFunction is constructor of LoxFunction
-func NewLoxFunction(declaration *Function, closure *Environment) *LoxFunction {
+func NewLoxFunction(declaration *Function, closure *Environment, IsInitializer bool) *LoxFunction {
 	return &LoxFunction{
-		declaration: declaration,
-		closure:     closure,
+		declaration:   declaration,
+		closure:       closure,
+		IsInitializer: IsInitializer,
 	}
 }
 
@@ -26,10 +28,17 @@ func (lf *LoxFunction) Call(interpreter *Interpreter, arguments []interface{}) (
 		var v interface{} = err
 		switch v.(type) {
 		case *ReturnValue:
+			if lf.IsInitializer {
+				return lf.closure.GetAt(0, "this")
+			}
 			return v.(*ReturnValue).Value, nil
 		default:
 			return nil, err
 		}
+	}
+
+	if lf.IsInitializer {
+		return lf.closure.GetAt(0, "this")
 	}
 
 	return nil, nil
@@ -38,6 +47,12 @@ func (lf *LoxFunction) Call(interpreter *Interpreter, arguments []interface{}) (
 // Arity returns arity of function
 func (lf *LoxFunction) Arity() int {
 	return len(lf.declaration.Params)
+}
+
+func (lc *LoxFunction) Bind(instance *LoxInstance) *LoxFunction {
+	environment := NewEnvironment(lc.closure)
+	environment.Define("this", instance)
+	return NewLoxFunction(lc.declaration, environment, lc.IsInitializer)
 }
 
 func (lf *LoxFunction) String() string {

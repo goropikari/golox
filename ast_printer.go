@@ -16,8 +16,15 @@ func NewAstPrinter() *AstPrinter {
 
 // Print prints given statements ast
 func (ap *AstPrinter) Print(stmts []Stmt) (string, error) {
-	val, err := stmts[0].Accept(ap)
-	return val.(string), err
+	vals := make([]string, 0)
+	for _, stmt := range stmts {
+		val, err := stmt.Accept(ap)
+		if err != nil {
+			return "", err
+		}
+		vals = append(vals, val.(string))
+	}
+	return strings.Join(vals, "\n"), nil
 }
 
 func (ap *AstPrinter) visitBinaryExpr(expr *Binary) (interface{}, error) {
@@ -32,7 +39,18 @@ func (ap *AstPrinter) visitCallExpr(expr *Call) (interface{}, error) {
 		args = append(args, arg)
 	}
 
-	return callee + strings.Join(args, " "), nil
+	fmt.Println("hoge", callee, args)
+
+	return callee + "(args " + strings.Join(args, "))"), nil
+}
+
+func (ap *AstPrinter) visitGetExpr(expr *Get) (interface{}, error) {
+	object, err := ap.parenthesizeExpr("object", expr.Object)
+	if err != nil {
+		return "", err
+	}
+
+	return "(get " + object + " (property " + expr.Name.Lexeme + ")", nil
 }
 
 func (ap *AstPrinter) visitGroupingExpr(expr *Grouping) (interface{}, error) {
@@ -48,6 +66,24 @@ func (ap *AstPrinter) visitLiteralExpr(expr *Literal) (interface{}, error) {
 
 func (ap *AstPrinter) visitLogicalExpr(expr *Logical) (interface{}, error) {
 	return ap.parenthesizeExpr(expr.Operator.Lexeme, expr.Left, expr.Right)
+}
+
+func (ap *AstPrinter) visitSetExpr(expr *Set) (interface{}, error) {
+	object, err := ap.parenthesizeExpr("object", expr.Object)
+	if err != nil {
+		return "", err
+	}
+
+	value, err := ap.parenthesizeExpr("value", expr.Value)
+	if err != nil {
+		return "", err
+	}
+
+	return "(set " + object + "(name " + expr.Name.Lexeme + ")" + value + ")", nil
+}
+
+func (ap *AstPrinter) visitThisExpr(expr *This) (interface{}, error) {
+	return "(this)", nil
 }
 
 func (ap *AstPrinter) visitUnaryExpr(expr *Unary) (interface{}, error) {
@@ -74,6 +110,19 @@ func (ap *AstPrinter) visitBlockStmt(b *Block) (interface{}, error) {
 	return "(block " + strings.Join(body, " ") + ")", nil
 }
 
+func (ap *AstPrinter) visitClassStmt(c *Class) (interface{}, error) {
+	fns := make([]string, 0)
+	for _, method := range c.Methods {
+		fn, err := method.Accept(ap)
+		if err != nil {
+			return "", err
+		}
+		fns = append(fns, fn.(string))
+	}
+
+	return "(class " + c.Name.Lexeme + " " + strings.Join(fns, " ") + ")", nil
+}
+
 func (ap *AstPrinter) visitExpressionStmt(e *Expression) (interface{}, error) {
 	return e.Expression.Accept(ap)
 }
@@ -87,12 +136,12 @@ func (ap *AstPrinter) visitFunctionStmt(f *Function) (interface{}, error) {
 	for _, stmt := range f.Body {
 		s, err := stmt.Accept(ap)
 		if err != nil {
-			return "nil", err
+			return "", err
 		}
 		stmts = append(stmts, "("+s.(string)+")")
 	}
 
-	return "(function (args (" + strings.Join(params, ", ") + ")) (body " + strings.Join(stmts, " ") + "))", nil
+	return "(function " + f.Name.Lexeme + " (args (" + strings.Join(params, ", ") + ")) (body " + strings.Join(stmts, " ") + "))", nil
 }
 
 func (ap *AstPrinter) visitIfStmt(i *If) (interface{}, error) {
@@ -141,7 +190,7 @@ func (ap *AstPrinter) visitWhileStmt(p *While) (interface{}, error) {
 }
 
 func (ap *AstPrinter) visitVarStmt(v *Var) (interface{}, error) {
-	initializer, err := ap.parenthesizeExpr("init", v.Initializer)
+	initializer, err := ap.parenthesizeExpr("initializer", v.Initializer)
 	if err != nil {
 		return "", nil
 	}

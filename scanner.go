@@ -33,6 +33,7 @@ func NewScanner(r *Runtime, b *bytes.Buffer) *Scanner {
 		"if":     IfTT,
 		"nil":    NilTT,
 		"or":     OrTT,
+		"pass":   PassTT,
 		"print":  PrintTT,
 		"return": ReturnTT,
 		"super":  SuperTT,

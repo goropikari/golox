@@ -35,6 +35,9 @@ func (p *Parser) expression() (Expr, error) {
 }
 
 func (p *Parser) declaration() (Stmt, error) {
+	if p.match(ClassTT) {
+		return p.classDeclaration()
+	}
 	if p.match(FunTT) {
 		return p.function("function")
 	}
@@ -51,6 +54,43 @@ func (p *Parser) declaration() (Stmt, error) {
 		p.synchronize()
 	}
 	return stmt, nil
+}
+
+func (p *Parser) classDeclaration() (Stmt, error) {
+	name, err := p.consume(IdentifierTT, "Expect class name.")
+	if err != nil {
+		return nil, err
+	}
+	_, err = p.consume(ColonTT, "Expect ':' after class name.")
+	if err != nil {
+		return nil, err
+	}
+	_, err = p.consume(NewlineTT, "Expect '\\n' after ':'.")
+	if err != nil {
+		return nil, err
+	}
+	_, err = p.consume(LeftBraceTT, "Expect '{' before class body.")
+	if err != nil {
+		return nil, err
+	}
+
+	methods := make([]*Function, 0)
+	for !p.check(RightBraceTT) && !p.isAtEnd() {
+		// if p.match(PassTT) {
+		// 	p.consume(NewlineTT, "Expect '\\n' after pass")
+		// 	continue
+		// }
+
+		fun, err := p.function("method")
+		if err != nil {
+			return nil, err
+		}
+		methods = append(methods, fun.(*Function))
+	}
+
+	_, err = p.consume(RightBraceTT, "Expect '}' after class body")
+
+	return NewClass(name, methods), nil
 }
 
 func (p *Parser) statement() (Stmt, error) {
@@ -304,6 +344,22 @@ func (p *Parser) expressionStatement() (Stmt, error) {
 }
 
 func (p *Parser) function(kind string) (Stmt, error) {
+	if p.match(PassTT) {
+		// dummy function
+		_, err := p.consumeTerm()
+		if err != nil {
+			return nil, err
+		}
+
+		return NewFunction(
+			p.previous(),
+			[]*Token{},
+			[]Stmt{
+				NewExpression(NewLiteral("pass")),
+			},
+		), nil
+	}
+
 	name, err := p.consume(IdentifierTT, "Expect "+kind+" name.")
 	if err != nil {
 		return nil, err
@@ -386,6 +442,9 @@ func (p *Parser) assignment() (Expr, error) {
 		if expr.IsType(&Variable{}) {
 			name := expr.(*Variable).Name
 			return NewAssign(name, value), nil
+		} else if expr.IsType(&Get{}) {
+			get := expr.(*Get)
+			return NewSet(get.Object, get.Name, value), nil
 		}
 
 		p.runtime.ErrorTokenMessage(equals, "Invalid assignment target.")
@@ -529,6 +588,12 @@ func (p *Parser) call() (Expr, error) {
 			if err != nil {
 				return nil, err
 			}
+		} else if p.match(DotTT) {
+			name, err := p.consume(IdentifierTT, "Expect property name after '.'.")
+			if err != nil {
+				return nil, err
+			}
+			expr = NewGet(expr, name)
 		} else {
 			break
 		}
@@ -576,9 +641,15 @@ func (p *Parser) primary() (Expr, error) {
 	if p.match(NilTT) {
 		return NewLiteral(nil), nil
 	}
-
+	if p.match(PassTT) {
+		return NewLiteral("pass"), nil
+	}
 	if p.match(NumberTT, StringTT) {
 		return NewLiteral(p.previous().Literal), nil
+	}
+
+	if p.match(ThisTT) {
+		return NewThis(p.previous()), nil
 	}
 
 	if p.match(IdentifierTT) {
