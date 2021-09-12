@@ -33,6 +33,7 @@ func main() {
 		"Expression: expression Expr",
 		"Function : name *Token, params []*Token, body []Stmt",
 		"If : condition Expr, thenBranch Stmt, elseBranch Stmt",
+		"Include : path *Token",
 		"Return : keyword *Token, value Expr",
 		"Var : name *Token, initializer Expr",
 		"While : condition Expr, body Stmt",

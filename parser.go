@@ -41,6 +41,9 @@ func (p *Parser) declaration() (Stmt, error) {
 	if p.match(FunTT) {
 		return p.function("function")
 	}
+	if p.match(IncludeTT) {
+		return p.include()
+	}
 	if p.match(VarTT) {
 		stmt, err := p.varDecralation()
 		if err != nil {
@@ -395,6 +398,18 @@ func (p *Parser) function(kind string) (Stmt, error) {
 		return nil, err
 	}
 	return NewFunction(name, parameters, body), nil
+}
+
+func (p *Parser) include() (Stmt, error) {
+	s, err := p.consume(StringTT, "Expect string after include")
+	if err != nil {
+		return nil, err
+	}
+	_, err = p.consumeTerm()
+	if err != nil {
+		return nil, err
+	}
+	return NewInclude(s), nil
 }
 
 func (p *Parser) block() ([]Stmt, error) {

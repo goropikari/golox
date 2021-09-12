@@ -11,6 +11,7 @@ type VisitorStmt interface {
 	visitExpressionStmt(*Expression) (interface{}, error)
 	visitFunctionStmt(*Function) (interface{}, error)
 	visitIfStmt(*If) (interface{}, error)
+	visitIncludeStmt(*Include) (interface{}, error)
 	visitReturnStmt(*Return) (interface{}, error)
 	visitVarStmt(*Var) (interface{}, error)
 	visitWhileStmt(*While) (interface{}, error)
@@ -118,6 +119,26 @@ func (i *If) Accept(visitor VisitorStmt) (interface{}, error) {
 func (rec *If) IsType(v interface{}) bool {
 	switch v.(type) {
 	case *If:
+		return true
+	}
+	return false
+}
+
+type Include struct {
+	Path *Token
+}
+
+func NewInclude(path *Token) Stmt {
+	return &Include{path}
+}
+
+func (i *Include) Accept(visitor VisitorStmt) (interface{}, error) {
+	return visitor.visitIncludeStmt(i)
+}
+
+func (rec *Include) IsType(v interface{}) bool {
+	switch v.(type) {
+	case *Include:
 		return true
 	}
 	return false

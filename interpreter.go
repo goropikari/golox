@@ -1,7 +1,10 @@
 package tlps
 
 import (
+	"bytes"
 	"fmt"
+	"os"
+	"path/filepath"
 	"reflect"
 
 	"github.com/goropikari/tlps/native_function"
@@ -355,6 +358,23 @@ func (i *Interpreter) visitIfStmt(stmt *If) (interface{}, error) {
 	} else if stmt.ElseBranch != nil {
 		return i.execute(stmt.ElseBranch)
 	}
+	return nil, nil
+}
+
+func (i *Interpreter) visitIncludeStmt(stmt *Include) (interface{}, error) {
+	path := filepath.Join(i.Runtime.BasePath, stmt.Path.Literal.(string))
+	source, err := os.ReadFile(path)
+	if err != nil {
+		return nil, RuntimeError.New(stmt.Path, err.Error())
+	}
+
+	previousBasePath := i.Runtime.BasePath
+	i.Runtime.BasePath = filepath.Dir(path)
+
+	i.Runtime.Run(bytes.NewBuffer(source))
+
+	i.Runtime.BasePath = previousBasePath
+
 	return nil, nil
 }
 

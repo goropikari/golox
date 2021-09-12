@@ -1,12 +1,4 @@
-fun test(expected, actual):
-    if expected != actual:
-        print("expected ")
-        print(expected)
-        print("\n")
-        print("actual ")
-        print(actual)
-        print("\n")
-        exit(1)
+include "testing.tlps"
 
 class Hoge:
     hoge(x, y):

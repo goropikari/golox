@@ -80,6 +80,9 @@ var h = Hoge()
 h.name = "hoge piyo" // instance variable can define anytime
 print(h.name) // => hoge piyo
 
+// include another file
+include "another.tlps" // path is relative path from the file which describe include statement
+
 // indentation can be used for if branch, loop body and function body
 var x = 1
   var y = 1  // indentation error
@@ -89,6 +92,7 @@ var x = 1
 
 - [x] escape sequence
 - [x] detect IndentationError
-- [ ] import another tlps file
+- [x] import another file
+  - [ ] detect circular import
+- [ ] support varargs
 - [ ] support IO
-

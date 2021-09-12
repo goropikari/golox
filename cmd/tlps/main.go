@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 	"unicode"
 
@@ -27,11 +28,12 @@ func main() {
 	}
 }
 
-func runFile(filepath string, r *tlps.Runtime) {
-	source, err := ioutil.ReadFile(filepath)
+func runFile(path string, r *tlps.Runtime) {
+	source, err := ioutil.ReadFile(path)
 	if err != nil {
 		log.Fatal(err)
 	}
+	r.BasePath = filepath.Dir(path)
 
 	// fmt.Println(source)
 	r.Run(bytes.NewBuffer(source))

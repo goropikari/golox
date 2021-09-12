@@ -162,6 +162,10 @@ func (ap *AstPrinter) visitIfStmt(i *If) (interface{}, error) {
 	return "(if " + cond + " " + thenBranch + " " + elseBranch + ")", nil
 }
 
+func (ap *AstPrinter) visitIncludeStmt(i *Include) (interface{}, error) {
+	return "(include " + i.Path.Lexeme + ")", nil
+}
+
 func (ap *AstPrinter) visitReturnStmt(r *Return) (interface{}, error) {
 	expr, err := ap.parenthesizeExpr(r.Keyword.Lexeme, r.Value)
 	if err != nil {

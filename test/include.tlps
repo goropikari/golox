@@ -1,0 +1,7 @@
+include "testing.tlps"
+include "subinclude/subinclude.tlps"
+include "subinclude/subinclude2.tlps"
+
+test(123, sub())
+test(456, subsub())
+test(789, sub2())

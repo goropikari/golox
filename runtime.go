@@ -14,6 +14,7 @@ type Runtime struct {
 	Environment     *Environment
 	Locals          map[Expr]int
 	Scopes          *ScopeStack
+	BasePath        string
 }
 
 // NewRuntime is constructor of Runtime
@@ -28,6 +29,7 @@ func NewRuntime() *Runtime {
 		Environment:     environment,
 		Locals:          make(map[Expr]int),
 		Scopes:          NewScopeStack(),
+		BasePath:        "",
 	}
 }
 
