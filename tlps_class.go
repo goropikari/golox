@@ -1,18 +1,18 @@
 package tlps
 
-type LoxClass struct {
+type TLPSClass struct {
 	Name    string
-	Methods map[string]*LoxFunction
+	Methods map[string]*TLPSFunction
 }
 
-func NewLoxClass(name string, methods map[string]*LoxFunction) *LoxClass {
-	return &LoxClass{
+func NewTLPSClass(name string, methods map[string]*TLPSFunction) *TLPSClass {
+	return &TLPSClass{
 		Name:    name,
 		Methods: methods,
 	}
 }
 
-func (lc *LoxClass) FindMethod(name string) (*LoxFunction, error) {
+func (lc *TLPSClass) FindMethod(name string) (*TLPSFunction, error) {
 	if v, ok := lc.Methods[name]; ok {
 		return v, nil
 	}
@@ -20,8 +20,8 @@ func (lc *LoxClass) FindMethod(name string) (*LoxFunction, error) {
 	return nil, nil
 }
 
-func (lc *LoxClass) Call(interpreter *Interpreter, arguments []interface{}) (interface{}, error) {
-	instance := NewLoxInstance(lc)
+func (lc *TLPSClass) Call(interpreter *Interpreter, arguments []interface{}) (interface{}, error) {
+	instance := NewTLPSInstance(lc)
 	initializer, err := lc.FindMethod("init")
 	if err != nil {
 		return nil, err
@@ -32,7 +32,7 @@ func (lc *LoxClass) Call(interpreter *Interpreter, arguments []interface{}) (int
 	return instance, nil
 }
 
-func (lc *LoxClass) Arity() int {
+func (lc *TLPSClass) Arity() int {
 	initializer, _ := lc.FindMethod("init")
 	if initializer == nil {
 		return 0
@@ -40,6 +40,6 @@ func (lc *LoxClass) Arity() int {
 	return initializer.Arity()
 }
 
-func (lc *LoxClass) String() string {
+func (lc *TLPSClass) String() string {
 	return lc.Name
 }

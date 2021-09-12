@@ -1,7 +1,7 @@
 package tlps
 
-// LoxCallable is interface
-type LoxCallable interface {
+// TLPSCallable is interface
+type TLPSCallable interface {
 	Call(*Interpreter, []interface{}) (interface{}, error)
 	Arity() int
 }

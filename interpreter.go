@@ -132,7 +132,7 @@ func (i *Interpreter) visitCallExpr(expr *Call) (interface{}, error) {
 		arguments = append(arguments, arg)
 	}
 
-	function, ok := callee.(LoxCallable)
+	function, ok := callee.(TLPSCallable)
 	if !ok {
 		return nil, RuntimeError.New(expr.Paren, "Can only call functions and classes.")
 	}
@@ -149,8 +149,8 @@ func (i *Interpreter) visitGetExpr(expr *Get) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	if _, ok := object.(*LoxInstance); ok {
-		return object.(*LoxInstance).Get(expr.Name)
+	if _, ok := object.(*TLPSInstance); ok {
+		return object.(*TLPSInstance).Get(expr.Name)
 	}
 
 	return nil, RuntimeError.New(expr.Name, "Only instances have properties.")
@@ -185,7 +185,7 @@ func (i *Interpreter) visitSetExpr(expr *Set) (interface{}, error) {
 		return nil, err
 	}
 
-	if _, ok := object.(*LoxInstance); !ok {
+	if _, ok := object.(*TLPSInstance); !ok {
 		return nil, RuntimeError.New(expr.Name, "Only instances have fields.")
 	}
 
@@ -193,7 +193,7 @@ func (i *Interpreter) visitSetExpr(expr *Set) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	li := object.(*LoxInstance)
+	li := object.(*TLPSInstance)
 	li.Set(expr.Name, value)
 
 	return value, nil
@@ -303,13 +303,13 @@ func (i *Interpreter) visitBlockStmt(stmt *Block) (interface{}, error) {
 func (i *Interpreter) visitClassStmt(stmt *Class) (interface{}, error) {
 	i.Runtime.Environment.Define(stmt.Name.Lexeme, nil)
 
-	methods := make(map[string]*LoxFunction)
+	methods := make(map[string]*TLPSFunction)
 	for _, method := range stmt.Methods {
-		function := NewLoxFunction(method, i.Runtime.Environment, method.Name.Lexeme == "init")
+		function := NewTLPSFunction(method, i.Runtime.Environment, method.Name.Lexeme == "init")
 		methods[method.Name.Lexeme] = function
 	}
 
-	klass := NewLoxClass(stmt.Name.Lexeme, methods)
+	klass := NewTLPSClass(stmt.Name.Lexeme, methods)
 	i.Runtime.Environment.Assign(stmt.Name, klass)
 
 	return nil, nil
@@ -332,7 +332,7 @@ func (i *Interpreter) visitExpressionStmt(stmt *Expression) (interface{}, error)
 }
 
 func (i *Interpreter) visitFunctionStmt(stmt *Function) (interface{}, error) {
-	function := NewLoxFunction(stmt, i.Runtime.Environment, false)
+	function := NewTLPSFunction(stmt, i.Runtime.Environment, false)
 	i.Runtime.Environment.Define(stmt.Name.Lexeme, function)
 	return nil, nil
 }
