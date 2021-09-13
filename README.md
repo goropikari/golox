@@ -1,6 +1,7 @@
 # GoLox
 
 [![Go](https://github.com/goropikari/golox/actions/workflows/go.yml/badge.svg)](https://github.com/goropikari/golox/actions/workflows/go.yml)
+[![Go Report Card](https://goreportcard.com/badge/github.com/goropikari/golox)](https://goreportcard.com/report/github.com/goropikari/golox)
 
 This is a go implementation of jlox (tree-walk interpreter) by [munificent/craftinginterpreters](https://github.com/munificent/craftinginterpreters).
 
