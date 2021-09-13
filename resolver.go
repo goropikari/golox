@@ -1,4 +1,4 @@
-package tlps
+package golox
 
 import (
 	"errors"
@@ -41,9 +41,6 @@ func NewResolver(runtime *Runtime, interpreter *Interpreter) *Resolver {
 }
 
 func (r *Resolver) visitBlockStmt(stmt *Block) (interface{}, error) {
-	if stmt.Typ == NoneBlock {
-		r.runtime.ErrorTokenMessage(stmt.Keyword, "unexpected indent")
-	}
 	r.beginScope()
 	r.ResolveStmts(stmt.Statements)
 	r.endScope()
@@ -133,6 +130,10 @@ func (r *Resolver) visitIfStmt(stmt *If) (interface{}, error) {
 
 func (r *Resolver) visitIncludeStmt(stmt *Include) (interface{}, error) {
 	return nil, nil
+}
+
+func (r *Resolver) visitPrintStmt(stmt *Print) (interface{}, error) {
+	return r.resolveExpr(stmt.Expression)
 }
 
 func (r *Resolver) visitReturnStmt(stmt *Return) (interface{}, error) {

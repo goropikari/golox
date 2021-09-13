@@ -1,0 +1,3 @@
+include "testing.lox";
+
+test("hoge piyo", "hoge " + "piyo");

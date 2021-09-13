@@ -1,4 +1,4 @@
-package tlps
+package golox
 
 // Environment is struct of environment
 type Environment struct {

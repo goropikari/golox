@@ -1,18 +1,18 @@
-package tlps
+package golox
 
-type TLPSInstance struct {
-	Klass  *TLPSClass
+type GoLoxInstance struct {
+	Klass  *GoLoxClass
 	Fields map[string]interface{}
 }
 
-func NewTLPSInstance(klass *TLPSClass) *TLPSInstance {
-	return &TLPSInstance{
+func NewGoLoxInstance(klass *GoLoxClass) *GoLoxInstance {
+	return &GoLoxInstance{
 		Klass:  klass,
 		Fields: make(map[string]interface{}),
 	}
 }
 
-func (lc *TLPSInstance) Get(name *Token) (interface{}, error) {
+func (lc *GoLoxInstance) Get(name *Token) (interface{}, error) {
 	if v, ok := lc.Fields[name.Lexeme]; ok {
 		return v, nil
 	}
@@ -28,10 +28,10 @@ func (lc *TLPSInstance) Get(name *Token) (interface{}, error) {
 	return nil, RuntimeError.New(name, "Undefied property '"+name.Lexeme+"'.")
 }
 
-func (lc *TLPSInstance) Set(name *Token, value interface{}) {
+func (lc *GoLoxInstance) Set(name *Token, value interface{}) {
 	lc.Fields[name.Lexeme] = value
 }
 
-func (lc *TLPSInstance) String() string {
+func (lc *GoLoxInstance) String() string {
 	return lc.Klass.Name + " instance"
 }

@@ -1,4 +1,4 @@
-package tlps
+package golox
 
 type Stmt interface {
 	Accept(VisitorStmt) (interface{}, error)
@@ -12,6 +12,7 @@ type VisitorStmt interface {
 	visitFunctionStmt(*Function) (interface{}, error)
 	visitIfStmt(*If) (interface{}, error)
 	visitIncludeStmt(*Include) (interface{}, error)
+	visitPrintStmt(*Print) (interface{}, error)
 	visitReturnStmt(*Return) (interface{}, error)
 	visitVarStmt(*Var) (interface{}, error)
 	visitWhileStmt(*While) (interface{}, error)
@@ -19,12 +20,10 @@ type VisitorStmt interface {
 
 type Block struct {
 	Statements []Stmt
-	Keyword    *Token
-	Typ        BlockType
 }
 
-func NewBlock(statements []Stmt, keyword *Token, typ BlockType) Stmt {
-	return &Block{statements, keyword, typ}
+func NewBlock(statements []Stmt) Stmt {
+	return &Block{statements}
 }
 
 func (b *Block) Accept(visitor VisitorStmt) (interface{}, error) {
@@ -140,6 +139,26 @@ func (i *Include) Accept(visitor VisitorStmt) (interface{}, error) {
 func (rec *Include) IsType(v interface{}) bool {
 	switch v.(type) {
 	case *Include:
+		return true
+	}
+	return false
+}
+
+type Print struct {
+	Expression Expr
+}
+
+func NewPrint(expression Expr) Stmt {
+	return &Print{expression}
+}
+
+func (p *Print) Accept(visitor VisitorStmt) (interface{}, error) {
+	return visitor.visitPrintStmt(p)
+}
+
+func (rec *Print) IsType(v interface{}) bool {
+	switch v.(type) {
+	case *Print:
 		return true
 	}
 	return false

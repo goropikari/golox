@@ -1,0 +1,7 @@
+include "testing.lox";
+include "subinclude/subinclude.lox";
+include "subinclude/subinclude2.lox";
+
+test(123, sub());
+test(456, subsub());
+test(789, sub2());

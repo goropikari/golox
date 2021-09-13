@@ -29,12 +29,13 @@ func main() {
 	})
 
 	defineAst(outputDir, "Stmt", []string{
-		"Block : statements []Stmt, keyword *Token, typ BlockType",
+		"Block : statements []Stmt",
 		"Class : name *Token, superclass *Variable, methods []*Function",
 		"Expression: expression Expr",
 		"Function : name *Token, params []*Token, body []Stmt",
 		"If : condition Expr, thenBranch Stmt, elseBranch Stmt",
 		"Include : path *Token",
+		"Print : expression Expr",
 		"Return : keyword *Token, value Expr",
 		"Var : name *Token, initializer Expr",
 		"While : condition Expr, body Stmt",
@@ -50,7 +51,7 @@ func defineAst(outputDir string, baseName string, types []string) error {
 	}
 	writer := bufio.NewWriter(file)
 	defer writer.Flush()
-	writer.WriteString("package tlps\n")
+	writer.WriteString("package golox\n")
 
 	writer.WriteString("type " + baseName + " interface {")
 	writer.WriteString("Accept(Visitor" + baseName + ") (interface{}, error)\n")

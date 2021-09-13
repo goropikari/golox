@@ -1,4 +1,4 @@
-package tlps
+package golox
 
 import "fmt"
 
@@ -14,10 +14,8 @@ const (
 	CommaTT
 	DotTT
 	MinusTT
-	NewlineTT
 	PlusTT
 	SemicolonTT
-	ColonTT
 	SlashTT
 	StarTT
 
@@ -49,7 +47,7 @@ const (
 	IncludeTT
 	NilTT
 	OrTT
-	PassTT
+	PrintTT
 	ReturnTT
 	SuperTT
 	ThisTT

@@ -1,79 +1,79 @@
-package tlps_test
+package golox_test
 
 import (
 	"testing"
 
-	"github.com/goropikari/tlps"
+	"github.com/goropikari/golox"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestInterpreter(t *testing.T) {
-	r := tlps.NewRuntime()
+	r := golox.NewRuntime()
 
 	var tests = []struct {
 		name     string
 		expected interface{}
-		given    []tlps.Stmt
+		given    []golox.Stmt
 	}{
 		{
 			name:     "1.3 + 1.2",
 			expected: "2.5",
-			given: []tlps.Stmt{
-				tlps.NewExpression(tlps.NewBinary(tlps.NewLiteral(1.3), tlps.NewToken(tlps.PlusTT, "+", nil, 1), tlps.NewLiteral(1.2))),
+			given: []golox.Stmt{
+				golox.NewExpression(golox.NewBinary(golox.NewLiteral(1.3), golox.NewToken(golox.PlusTT, "+", nil, 1), golox.NewLiteral(1.2))),
 			},
 		},
 		{
 			name:     "1.3 * 1.2",
 			expected: "1.56",
-			given: []tlps.Stmt{
-				tlps.NewExpression(tlps.NewBinary(tlps.NewLiteral(1.3), tlps.NewToken(tlps.StarTT, "*", nil, 1), tlps.NewLiteral(1.2))),
+			given: []golox.Stmt{
+				golox.NewExpression(golox.NewBinary(golox.NewLiteral(1.3), golox.NewToken(golox.StarTT, "*", nil, 1), golox.NewLiteral(1.2))),
 			},
 		},
 		{
 			name:     "2 / 4",
 			expected: "0.5",
-			given: []tlps.Stmt{
-				tlps.NewExpression(tlps.NewBinary(tlps.NewLiteral(2.0), tlps.NewToken(tlps.SlashTT, "/", nil, 1), tlps.NewLiteral(4.0))),
+			given: []golox.Stmt{
+				golox.NewExpression(golox.NewBinary(golox.NewLiteral(2.0), golox.NewToken(golox.SlashTT, "/", nil, 1), golox.NewLiteral(4.0))),
 			},
 		},
 		{
 			name:     "string + string",
 			expected: "foo bar",
-			given: []tlps.Stmt{
-				tlps.NewExpression(tlps.NewBinary(tlps.NewLiteral("foo "), tlps.NewToken(tlps.PlusTT, "+", nil, 1), tlps.NewLiteral("bar"))),
+			given: []golox.Stmt{
+				golox.NewExpression(golox.NewBinary(golox.NewLiteral("foo "), golox.NewToken(golox.PlusTT, "+", nil, 1), golox.NewLiteral("bar"))),
 			},
 		},
 		{
 			name:     "function",
 			expected: "13",
-			given: []tlps.Stmt{
+			given: []golox.Stmt{
 				// fun f(x, y):
 				//   return x + y
 				// f(11, 2)
-				tlps.NewFunction(
-					tlps.NewToken(tlps.IdentifierTT, "f", nil, 1),
-					[]*tlps.Token{
-						tlps.NewToken(tlps.IdentifierTT, "x", nil, 1),
-						tlps.NewToken(tlps.IdentifierTT, "y", nil, 1),
+				golox.NewFunction(
+					golox.NewToken(golox.IdentifierTT, "f", nil, 1),
+					[]*golox.Token{
+						golox.NewToken(golox.IdentifierTT, "x", nil, 1),
+						golox.NewToken(golox.IdentifierTT, "y", nil, 1),
 					},
-					[]tlps.Stmt{
-						tlps.NewReturn(
-							tlps.NewToken(tlps.ReturnTT, "return", nil, 2),
-							tlps.NewBinary(
-								tlps.NewVariable(tlps.NewToken(tlps.IdentifierTT, "x", nil, 2)),
-								tlps.NewToken(tlps.PlusTT, "+", nil, 1),
-								tlps.NewVariable(tlps.NewToken(tlps.IdentifierTT, "y", nil, 2)),
+					[]golox.Stmt{
+						golox.NewReturn(
+							golox.NewToken(golox.ReturnTT, "return", nil, 2),
+							golox.NewBinary(
+								golox.NewVariable(golox.NewToken(golox.IdentifierTT, "x", nil, 2)),
+								golox.NewToken(golox.PlusTT, "+", nil, 1),
+								golox.NewVariable(golox.NewToken(golox.IdentifierTT, "y", nil, 2)),
 							),
 						),
 					},
 				),
-				tlps.NewExpression(
-					tlps.NewCall(
-						tlps.NewVariable(tlps.NewToken(tlps.IdentifierTT, "f", nil, 3)),
-						tlps.NewToken(tlps.LeftParenTT, "(", nil, 3),
-						[]tlps.Expr{
-							tlps.NewLiteral(float64(11)),
-							tlps.NewLiteral(float64(2)),
+				golox.NewExpression(
+					golox.NewCall(
+						golox.NewVariable(golox.NewToken(golox.IdentifierTT, "f", nil, 3)),
+						golox.NewToken(golox.LeftParenTT, "(", nil, 3),
+						[]golox.Expr{
+							golox.NewLiteral(float64(11)),
+							golox.NewLiteral(float64(2)),
 						},
 					),
 				),
@@ -82,120 +82,120 @@ func TestInterpreter(t *testing.T) {
 		{
 			name:     "class",
 			expected: "hoge",
-			given: []tlps.Stmt{
+			given: []golox.Stmt{
 				// class Hoge:
 				//   init(x):
 				//     this.x = x
 				// Hoge("hoge").x
-				tlps.NewClass(
-					tlps.NewToken(tlps.IdentifierTT, "Hoge", nil, 1),
+				golox.NewClass(
+					golox.NewToken(golox.IdentifierTT, "Hoge", nil, 1),
 					nil,
-					[]*tlps.Function{
-						tlps.NewFunction(
-							tlps.NewToken(tlps.IdentifierTT, "init", nil, 2),
-							[]*tlps.Token{
-								tlps.NewToken(tlps.IdentifierTT, "x", nil, 2),
+					[]*golox.Function{
+						golox.NewFunction(
+							golox.NewToken(golox.IdentifierTT, "init", nil, 2),
+							[]*golox.Token{
+								golox.NewToken(golox.IdentifierTT, "x", nil, 2),
 							},
-							[]tlps.Stmt{
-								tlps.NewExpression(
-									tlps.NewSet(
-										tlps.NewThis(
-											tlps.NewToken(tlps.ThisTT, "this", nil, 3),
+							[]golox.Stmt{
+								golox.NewExpression(
+									golox.NewSet(
+										golox.NewThis(
+											golox.NewToken(golox.ThisTT, "this", nil, 3),
 										),
-										tlps.NewToken(tlps.IdentifierTT, "x", nil, 3),
-										tlps.NewVariable(
-											tlps.NewToken(tlps.IdentifierTT, "x", nil, 3),
+										golox.NewToken(golox.IdentifierTT, "x", nil, 3),
+										golox.NewVariable(
+											golox.NewToken(golox.IdentifierTT, "x", nil, 3),
 										),
 									),
 								),
 							},
-						).(*tlps.Function),
+						).(*golox.Function),
 					},
 				),
-				tlps.NewExpression(
-					tlps.NewGet(
-						tlps.NewCall(
-							tlps.NewVariable(
-								tlps.NewToken(tlps.IdentifierTT, "Hoge", nil, 4),
+				golox.NewExpression(
+					golox.NewGet(
+						golox.NewCall(
+							golox.NewVariable(
+								golox.NewToken(golox.IdentifierTT, "Hoge", nil, 4),
 							),
-							tlps.NewToken(tlps.LeftParenTT, "(", nil, 4),
-							[]tlps.Expr{
-								tlps.NewLiteral("hoge"),
+							golox.NewToken(golox.LeftParenTT, "(", nil, 4),
+							[]golox.Expr{
+								golox.NewLiteral("hoge"),
 							},
 						),
-						tlps.NewToken(tlps.IdentifierTT, "x", nil, 4),
+						golox.NewToken(golox.IdentifierTT, "x", nil, 4),
 					),
 				),
 			},
 		},
-		{
-			name:     "super class",
-			expected: "hoge",
-			given: []tlps.Stmt{
-				// class Hoge:
-				//   init(x):
-				//     this.x = x
-				// class Piyo(Hoge):
-				//   pass
-				// Piyo("hoge").x
-				tlps.NewClass(
-					tlps.NewToken(tlps.IdentifierTT, "Hoge", nil, 1),
-					nil,
-					[]*tlps.Function{
-						tlps.NewFunction(
-							tlps.NewToken(tlps.IdentifierTT, "init", nil, 2),
-							[]*tlps.Token{
-								tlps.NewToken(tlps.IdentifierTT, "x", nil, 2),
-							},
-							[]tlps.Stmt{
-								tlps.NewExpression(
-									tlps.NewSet(
-										tlps.NewThis(
-											tlps.NewToken(tlps.ThisTT, "this", nil, 3),
-										),
-										tlps.NewToken(tlps.IdentifierTT, "x", nil, 3),
-										tlps.NewVariable(
-											tlps.NewToken(tlps.IdentifierTT, "x", nil, 3),
-										),
-									),
-								),
-							},
-						).(*tlps.Function),
-					},
-				),
-				tlps.NewClass(
-					tlps.NewToken(tlps.IdentifierTT, "Piyo", nil, 4),
-					tlps.NewVariable(
-						tlps.NewToken(tlps.IdentifierTT, "Hoge", nil, 4),
-					).(*tlps.Variable),
-					[]*tlps.Function{
-						tlps.NewFunction(
-							tlps.NewToken(tlps.PassTT, "pass", nil, 5),
-							[]*tlps.Token{},
-							[]tlps.Stmt{},
-						).(*tlps.Function),
-					},
-				),
-				tlps.NewExpression(
-					tlps.NewGet(
-						tlps.NewCall(
-							tlps.NewVariable(
-								tlps.NewToken(tlps.IdentifierTT, "Piyo", nil, 6),
-							),
-							tlps.NewToken(tlps.LeftParenTT, "(", nil, 6),
-							[]tlps.Expr{
-								tlps.NewLiteral("hoge"),
-							},
-						),
-						tlps.NewToken(tlps.IdentifierTT, "x", nil, 6),
-					),
-				),
-			},
-		},
+		// {
+		// 	name:     "super class",
+		// 	expected: "hoge",
+		// 	given: []golox.Stmt{
+		// 		// class Hoge:
+		// 		//   init(x):
+		// 		//     this.x = x
+		// 		// class Piyo(Hoge):
+		// 		//   pass
+		// 		// Piyo("hoge").x
+		// 		golox.NewClass(
+		// 			golox.NewToken(golox.IdentifierTT, "Hoge", nil, 1),
+		// 			nil,
+		// 			[]*golox.Function{
+		// 				golox.NewFunction(
+		// 					golox.NewToken(golox.IdentifierTT, "init", nil, 2),
+		// 					[]*golox.Token{
+		// 						golox.NewToken(golox.IdentifierTT, "x", nil, 2),
+		// 					},
+		// 					[]golox.Stmt{
+		// 						golox.NewExpression(
+		// 							golox.NewSet(
+		// 								golox.NewThis(
+		// 									golox.NewToken(golox.ThisTT, "this", nil, 3),
+		// 								),
+		// 								golox.NewToken(golox.IdentifierTT, "x", nil, 3),
+		// 								golox.NewVariable(
+		// 									golox.NewToken(golox.IdentifierTT, "x", nil, 3),
+		// 								),
+		// 							),
+		// 						),
+		// 					},
+		// 				).(*golox.Function),
+		// 			},
+		// 		),
+		// 		golox.NewClass(
+		// 			golox.NewToken(golox.IdentifierTT, "Piyo", nil, 4),
+		// 			golox.NewVariable(
+		// 				golox.NewToken(golox.IdentifierTT, "Hoge", nil, 4),
+		// 			).(*golox.Variable),
+		// 			[]*golox.Function{
+		// 				golox.NewFunction(
+		// 					golox.NewToken(golox.PassTT, "pass", nil, 5),
+		// 					[]*golox.Token{},
+		// 					[]golox.Stmt{},
+		// 				).(*golox.Function),
+		// 			},
+		// 		),
+		// 		golox.NewExpression(
+		// 			golox.NewGet(
+		// 				golox.NewCall(
+		// 					golox.NewVariable(
+		// 						golox.NewToken(golox.IdentifierTT, "Piyo", nil, 6),
+		// 					),
+		// 					golox.NewToken(golox.LeftParenTT, "(", nil, 6),
+		// 					[]golox.Expr{
+		// 						golox.NewLiteral("hoge"),
+		// 					},
+		// 				),
+		// 				golox.NewToken(golox.IdentifierTT, "x", nil, 6),
+		// 			),
+		// 		),
+		// 	},
+		// },
 		{
 			name:     "scope resolution",
 			expected: "20",
-			given: []tlps.Stmt{
+			given: []golox.Stmt{
 				// fun f():
 				//   var a = 10
 				//   fun g():
@@ -208,78 +208,78 @@ func TestInterpreter(t *testing.T) {
 				//   return g
 				// var fn = f()
 				// fn()
-				tlps.NewFunction(
-					tlps.NewToken(tlps.IdentifierTT, "f", nil, 1),
-					[]*tlps.Token{},
-					[]tlps.Stmt{
-						tlps.NewVar(
-							tlps.NewToken(tlps.IdentifierTT, "a", nil, 2),
-							tlps.NewLiteral(10.0),
+				golox.NewFunction(
+					golox.NewToken(golox.IdentifierTT, "f", nil, 1),
+					[]*golox.Token{},
+					[]golox.Stmt{
+						golox.NewVar(
+							golox.NewToken(golox.IdentifierTT, "a", nil, 2),
+							golox.NewLiteral(10.0),
 						),
 
-						tlps.NewFunction(
-							tlps.NewToken(tlps.IdentifierTT, "g", nil, 3),
-							[]*tlps.Token{},
-							[]tlps.Stmt{
-								tlps.NewFunction(
-									tlps.NewToken(tlps.IdentifierTT, "h", nil, 4),
-									[]*tlps.Token{},
-									[]tlps.Stmt{
-										tlps.NewReturn(
-											tlps.NewToken(tlps.ReturnTT, "return", nil, 2),
-											tlps.NewVariable(tlps.NewToken(tlps.IdentifierTT, "a", nil, 2)),
+						golox.NewFunction(
+							golox.NewToken(golox.IdentifierTT, "g", nil, 3),
+							[]*golox.Token{},
+							[]golox.Stmt{
+								golox.NewFunction(
+									golox.NewToken(golox.IdentifierTT, "h", nil, 4),
+									[]*golox.Token{},
+									[]golox.Stmt{
+										golox.NewReturn(
+											golox.NewToken(golox.ReturnTT, "return", nil, 2),
+											golox.NewVariable(golox.NewToken(golox.IdentifierTT, "a", nil, 2)),
 										),
 									},
 								),
-								tlps.NewVar(
-									tlps.NewToken(tlps.IdentifierTT, "x", nil, 6),
-									tlps.NewCall(
-										tlps.NewVariable(tlps.NewToken(tlps.IdentifierTT, "h", nil, 6)),
-										tlps.NewToken(tlps.LeftParenTT, "(", nil, 6),
-										[]tlps.Expr{},
+								golox.NewVar(
+									golox.NewToken(golox.IdentifierTT, "x", nil, 6),
+									golox.NewCall(
+										golox.NewVariable(golox.NewToken(golox.IdentifierTT, "h", nil, 6)),
+										golox.NewToken(golox.LeftParenTT, "(", nil, 6),
+										[]golox.Expr{},
 									),
 								),
-								tlps.NewVar(
-									tlps.NewToken(tlps.IdentifierTT, "a", nil, 7),
-									tlps.NewLiteral(123.0),
+								golox.NewVar(
+									golox.NewToken(golox.IdentifierTT, "a", nil, 7),
+									golox.NewLiteral(123.0),
 								),
-								tlps.NewVar(
-									tlps.NewToken(tlps.IdentifierTT, "y", nil, 8),
-									tlps.NewCall(
-										tlps.NewVariable(tlps.NewToken(tlps.IdentifierTT, "h", nil, 8)),
-										tlps.NewToken(tlps.LeftParenTT, "(", nil, 8),
-										[]tlps.Expr{},
+								golox.NewVar(
+									golox.NewToken(golox.IdentifierTT, "y", nil, 8),
+									golox.NewCall(
+										golox.NewVariable(golox.NewToken(golox.IdentifierTT, "h", nil, 8)),
+										golox.NewToken(golox.LeftParenTT, "(", nil, 8),
+										[]golox.Expr{},
 									),
 								),
-								tlps.NewReturn(
-									tlps.NewToken(tlps.ReturnTT, "return", nil, 9),
-									tlps.NewBinary(
-										tlps.NewVariable(tlps.NewToken(tlps.IdentifierTT, "x", nil, 9)),
-										tlps.NewToken(tlps.PlusTT, "+", nil, 9),
-										tlps.NewVariable(tlps.NewToken(tlps.IdentifierTT, "y", nil, 9)),
+								golox.NewReturn(
+									golox.NewToken(golox.ReturnTT, "return", nil, 9),
+									golox.NewBinary(
+										golox.NewVariable(golox.NewToken(golox.IdentifierTT, "x", nil, 9)),
+										golox.NewToken(golox.PlusTT, "+", nil, 9),
+										golox.NewVariable(golox.NewToken(golox.IdentifierTT, "y", nil, 9)),
 									),
 								),
 							},
 						),
-						tlps.NewReturn(
-							tlps.NewToken(tlps.ReturnTT, "return", nil, 10),
-							tlps.NewVariable(tlps.NewToken(tlps.IdentifierTT, "g", nil, 10)),
+						golox.NewReturn(
+							golox.NewToken(golox.ReturnTT, "return", nil, 10),
+							golox.NewVariable(golox.NewToken(golox.IdentifierTT, "g", nil, 10)),
 						),
 					},
 				),
-				tlps.NewVar(
-					tlps.NewToken(tlps.IdentifierTT, "fn", nil, 11),
-					tlps.NewCall(
-						tlps.NewVariable(tlps.NewToken(tlps.IdentifierTT, "f", nil, 11)),
-						tlps.NewToken(tlps.LeftParenTT, "(", nil, 11),
-						[]tlps.Expr{},
+				golox.NewVar(
+					golox.NewToken(golox.IdentifierTT, "fn", nil, 11),
+					golox.NewCall(
+						golox.NewVariable(golox.NewToken(golox.IdentifierTT, "f", nil, 11)),
+						golox.NewToken(golox.LeftParenTT, "(", nil, 11),
+						[]golox.Expr{},
 					),
 				),
-				tlps.NewExpression(
-					tlps.NewCall(
-						tlps.NewVariable(tlps.NewToken(tlps.IdentifierTT, "fn", nil, 12)),
-						tlps.NewToken(tlps.LeftParenTT, "(", nil, 12),
-						[]tlps.Expr{},
+				golox.NewExpression(
+					golox.NewCall(
+						golox.NewVariable(golox.NewToken(golox.IdentifierTT, "fn", nil, 12)),
+						golox.NewToken(golox.LeftParenTT, "(", nil, 12),
+						[]golox.Expr{},
 					),
 				),
 			},
@@ -289,8 +289,8 @@ func TestInterpreter(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			interpreter := tlps.NewInterpreter(r)
-			resolver := tlps.NewResolver(r, interpreter)
+			interpreter := golox.NewInterpreter(r)
+			resolver := golox.NewResolver(r, interpreter)
 			resolver.ResolveStmts(tt.given)
 			actual, _ := interpreter.Interpret(tt.given)
 			assert.Equal(t, tt.expected, actual)
@@ -299,21 +299,21 @@ func TestInterpreter(t *testing.T) {
 }
 
 func TestInterpreter_Error(t *testing.T) {
-	r := tlps.NewRuntime()
-	plus := tlps.NewToken(tlps.PlusTT, "+", nil, 1)
+	r := golox.NewRuntime()
+	plus := golox.NewToken(golox.PlusTT, "+", nil, 1)
 
 	var tests = []struct {
 		name     string
 		expected interface{}
 		err      error
-		given    []tlps.Stmt
+		given    []golox.Stmt
 	}{
 		{
 			name:     "number + string",
 			expected: "nil",
-			err:      tlps.RuntimeError.New(plus, "Operands must be two numbers or two strings."),
-			given: []tlps.Stmt{
-				tlps.NewExpression(tlps.NewBinary(tlps.NewLiteral(1.5), plus, tlps.NewLiteral("bar"))),
+			err:      golox.RuntimeError.New(plus, "Operands must be two numbers or two strings."),
+			given: []golox.Stmt{
+				golox.NewExpression(golox.NewBinary(golox.NewLiteral(1.5), plus, golox.NewLiteral("bar"))),
 			},
 		},
 	}
@@ -321,7 +321,7 @@ func TestInterpreter_Error(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			interpreter := tlps.NewInterpreter(r)
+			interpreter := golox.NewInterpreter(r)
 			actual, err := interpreter.Interpret(tt.given)
 			assert.Equal(t, tt.expected, actual)
 			assert.Equal(t, tt.err, err)

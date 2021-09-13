@@ -1,6 +1,6 @@
-package tlps
+package golox
 
-import "github.com/goropikari/tlps/collections/stack"
+import "github.com/goropikari/golox/collections/stack"
 
 // IndentStack is struct of stack for storing indentation level
 type IndentStack struct {

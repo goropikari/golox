@@ -1,0 +1,55 @@
+include "testing.lox";
+
+class Hoge {
+    hoge(x, y) {
+        return x + y;
+    }
+}
+
+test(4, Hoge().hoge(1, 3));
+
+
+class Fuga < Hoge {
+    f() {
+        nil;
+    }
+}
+
+test(4, Fuga().hoge(1, 3));
+
+
+class Piyo {
+    init(name) {
+        this.name = name;
+    }
+}
+
+
+var p = Piyo("piyo");
+test("piyo", p.name);
+
+
+class A {
+    method() {
+        return 111;
+    }
+}
+
+class B < A {
+    method() {
+        return 222;
+    }
+
+    methodA() {
+        return super.method();
+    }
+}
+
+class C < B {
+    f() {
+        nil;
+    }
+}
+
+test(222, C().method());
+test(111, C().methodA());

@@ -1,0 +1,9 @@
+fun test(expected, actual) {
+    if (expected != actual) {
+        print "expected ";
+        print expected;
+        print "actual ";
+        print actual;
+        exit(1);
+    }
+}

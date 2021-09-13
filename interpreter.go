@@ -1,4 +1,4 @@
-package tlps
+package golox
 
 import (
 	"bytes"
@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"reflect"
 
-	"github.com/goropikari/tlps/native_function"
+	"github.com/goropikari/golox/native_function"
 )
 
 // Interpreter is struct of interpreter
@@ -21,7 +21,6 @@ func NewInterpreter(runtime *Runtime) *Interpreter {
 
 	globals.Define("clock", NewNativeFunction(native_function.NewClockFunc()))
 	globals.Define("exit", NewNativeFunction(native_function.NewExitFunc()))
-	globals.Define("print", NewNativeFunction(native_function.NewPrintFunc()))
 
 	return &Interpreter{
 		Runtime: runtime,
@@ -141,14 +140,12 @@ func (i *Interpreter) visitCallExpr(expr *Call) (interface{}, error) {
 		arguments = append(arguments, arg)
 	}
 
-	function, ok := callee.(TLPSCallable)
+	function, ok := callee.(GoLoxCallable)
 	if !ok {
 		return nil, RuntimeError.New(expr.Paren, "Can only call functions and classes.")
 	}
 
-	if function.Arity() == -1 {
-		return function.Call(i, arguments)
-	} else if len(arguments) != function.Arity() {
+	if len(arguments) != function.Arity() {
 		return nil, RuntimeError.New(expr.Paren, fmt.Sprintf("Expected %d arguments but got %d.", function.Arity(), len(arguments)))
 	}
 
@@ -160,8 +157,8 @@ func (i *Interpreter) visitGetExpr(expr *Get) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	if _, ok := object.(*TLPSInstance); ok {
-		return object.(*TLPSInstance).Get(expr.Name)
+	if _, ok := object.(*GoLoxInstance); ok {
+		return object.(*GoLoxInstance).Get(expr.Name)
 	}
 
 	return nil, RuntimeError.New(expr.Name, "Only instances have properties.")
@@ -196,7 +193,7 @@ func (i *Interpreter) visitSetExpr(expr *Set) (interface{}, error) {
 		return nil, err
 	}
 
-	if _, ok := object.(*TLPSInstance); !ok {
+	if _, ok := object.(*GoLoxInstance); !ok {
 		return nil, RuntimeError.New(expr.Name, "Only instances have fields.")
 	}
 
@@ -204,7 +201,7 @@ func (i *Interpreter) visitSetExpr(expr *Set) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	li := object.(*TLPSInstance)
+	li := object.(*GoLoxInstance)
 	li.Set(expr.Name, value)
 
 	return value, nil
@@ -213,9 +210,9 @@ func (i *Interpreter) visitSetExpr(expr *Set) (interface{}, error) {
 func (i *Interpreter) visitSuperExpr(expr *Super) (interface{}, error) {
 	distance := i.Runtime.Locals[expr]
 	sc, _ := i.Runtime.Environment.GetAt(distance, "super")
-	superclass := sc.(*TLPSClass)
+	superclass := sc.(*GoLoxClass)
 	obj, _ := i.Runtime.Environment.GetAt(distance-1, "this")
-	object := obj.(*TLPSInstance)
+	object := obj.(*GoLoxInstance)
 
 	method, _ := superclass.FindMethod(expr.Method.Lexeme)
 
@@ -328,7 +325,7 @@ func (i *Interpreter) visitBlockStmt(stmt *Block) (interface{}, error) {
 }
 
 func (i *Interpreter) visitClassStmt(stmt *Class) (interface{}, error) {
-	var superclass *TLPSClass = nil
+	var superclass *GoLoxClass = nil
 	if stmt.Superclass != nil {
 		sc, err := i.evaluate(stmt.Superclass)
 		if err != nil {
@@ -336,7 +333,7 @@ func (i *Interpreter) visitClassStmt(stmt *Class) (interface{}, error) {
 		}
 
 		var ok bool
-		if superclass, ok = sc.(*TLPSClass); !ok {
+		if superclass, ok = sc.(*GoLoxClass); !ok {
 			return nil, RuntimeError.New(stmt.Superclass.Name, "Superclass must be a class.")
 		}
 	}
@@ -348,13 +345,13 @@ func (i *Interpreter) visitClassStmt(stmt *Class) (interface{}, error) {
 		i.Runtime.Environment.Define("super", superclass)
 	}
 
-	methods := make(map[string]*TLPSFunction)
+	methods := make(map[string]*GoLoxFunction)
 	for _, method := range stmt.Methods {
-		function := NewTLPSFunction(method, i.Runtime.Environment, method.Name.Lexeme == "init")
+		function := NewGoLoxFunction(method, i.Runtime.Environment, method.Name.Lexeme == "init")
 		methods[method.Name.Lexeme] = function
 	}
 
-	klass := NewTLPSClass(stmt.Name.Lexeme, superclass, methods)
+	klass := NewGoLoxClass(stmt.Name.Lexeme, superclass, methods)
 
 	if superclass != nil {
 		i.Runtime.Environment = i.Runtime.Environment.Enclosing
@@ -382,7 +379,7 @@ func (i *Interpreter) visitExpressionStmt(stmt *Expression) (interface{}, error)
 }
 
 func (i *Interpreter) visitFunctionStmt(stmt *Function) (interface{}, error) {
-	function := NewTLPSFunction(stmt, i.Runtime.Environment, false)
+	function := NewGoLoxFunction(stmt, i.Runtime.Environment, false)
 	i.Runtime.Environment.Define(stmt.Name.Lexeme, function)
 	return nil, nil
 }
@@ -414,6 +411,16 @@ func (i *Interpreter) visitIncludeStmt(stmt *Include) (interface{}, error) {
 
 	i.Runtime.BasePath = previousBasePath
 
+	return nil, nil
+}
+
+func (i *Interpreter) visitPrintStmt(stmt *Print) (interface{}, error) {
+	value, err := i.evaluate(stmt.Expression)
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Println(stringfy(value))
 	return nil, nil
 }
 

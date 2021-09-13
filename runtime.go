@@ -1,4 +1,4 @@
-package tlps
+package golox
 
 import (
 	"bytes"

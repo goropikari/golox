@@ -1,20 +1,20 @@
-package tlps
+package golox
 
-type TLPSClass struct {
+type GoLoxClass struct {
 	Name       string
-	Superclass *TLPSClass
-	Methods    map[string]*TLPSFunction
+	Superclass *GoLoxClass
+	Methods    map[string]*GoLoxFunction
 }
 
-func NewTLPSClass(name string, superclass *TLPSClass, methods map[string]*TLPSFunction) *TLPSClass {
-	return &TLPSClass{
+func NewGoLoxClass(name string, superclass *GoLoxClass, methods map[string]*GoLoxFunction) *GoLoxClass {
+	return &GoLoxClass{
 		Name:       name,
 		Superclass: superclass,
 		Methods:    methods,
 	}
 }
 
-func (lc *TLPSClass) FindMethod(name string) (*TLPSFunction, error) {
+func (lc *GoLoxClass) FindMethod(name string) (*GoLoxFunction, error) {
 	if v, ok := lc.Methods[name]; ok {
 		return v, nil
 	}
@@ -26,8 +26,8 @@ func (lc *TLPSClass) FindMethod(name string) (*TLPSFunction, error) {
 	return nil, nil
 }
 
-func (lc *TLPSClass) Call(interpreter *Interpreter, arguments []interface{}) (interface{}, error) {
-	instance := NewTLPSInstance(lc)
+func (lc *GoLoxClass) Call(interpreter *Interpreter, arguments []interface{}) (interface{}, error) {
+	instance := NewGoLoxInstance(lc)
 	initializer, err := lc.FindMethod("init")
 	if err != nil {
 		return nil, err
@@ -38,7 +38,7 @@ func (lc *TLPSClass) Call(interpreter *Interpreter, arguments []interface{}) (in
 	return instance, nil
 }
 
-func (lc *TLPSClass) Arity() int {
+func (lc *GoLoxClass) Arity() int {
 	initializer, _ := lc.FindMethod("init")
 	if initializer == nil {
 		return 0
@@ -46,6 +46,6 @@ func (lc *TLPSClass) Arity() int {
 	return initializer.Arity()
 }
 
-func (lc *TLPSClass) String() string {
+func (lc *GoLoxClass) String() string {
 	return lc.Name
 }

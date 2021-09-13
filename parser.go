@@ -1,4 +1,4 @@
-package tlps
+package golox
 
 // Parser is struct of parser
 type Parser struct {
@@ -66,18 +66,9 @@ func (p *Parser) classDeclaration() (Stmt, error) {
 	}
 
 	var superclass *Variable
-	if p.match(LeftParenTT) {
+	if p.match(LessTT) {
 		p.consume(IdentifierTT, "Expect superclass name.")
 		superclass = NewVariable(p.previous()).(*Variable)
-		p.consume(RightParenTT, "Expect superclass name.")
-	}
-	_, err = p.consume(ColonTT, "Expect ':' after class name.")
-	if err != nil {
-		return nil, err
-	}
-	_, err = p.consume(NewlineTT, "Expect '\\n' after ':'.")
-	if err != nil {
-		return nil, err
 	}
 	_, err = p.consume(LeftBraceTT, "Expect '{' before class body.")
 	if err != nil {
@@ -86,10 +77,6 @@ func (p *Parser) classDeclaration() (Stmt, error) {
 
 	methods := make([]*Function, 0)
 	for !p.check(RightBraceTT) && !p.isAtEnd() {
-		// if p.match(PassTT) {
-		// 	p.consume(NewlineTT, "Expect '\\n' after pass")
-		// 	continue
-		// }
 
 		fun, err := p.function("method")
 		if err != nil {
@@ -110,6 +97,9 @@ func (p *Parser) statement() (Stmt, error) {
 	if p.match(IfTT) {
 		return p.ifStatement()
 	}
+	if p.match(PrintTT) {
+		return p.printStatement()
+	}
 	if p.match(ReturnTT) {
 		return p.returnStatement()
 	}
@@ -117,24 +107,27 @@ func (p *Parser) statement() (Stmt, error) {
 		return p.whileStatement()
 	}
 	if p.match(LeftBraceTT) {
-		return p.blockStatement(NoneBlock)
+		b, err := p.block()
+		if err != nil {
+			return nil, err
+		}
+		return NewBlock(b), nil
 	}
 
 	return p.expressionStatement()
 }
 
 func (p *Parser) blockStatement(typ BlockType) (Stmt, error) {
-	keyword := p.previous() // => '{'
 	b, err := p.block()
 	if err != nil {
 		return nil, err
 	}
-	return NewBlock(b, keyword, typ), nil
+	return NewBlock(b), nil
 }
 
 func (p *Parser) forStatement() (Stmt, error) {
+	_, err := p.consume(LeftParenTT, "Expect '(' after 'for'.")
 	var initializer Stmt
-	var err error
 	if p.match(SemicolonTT) {
 		initializer = nil
 	} else if p.match(VarTT) {
@@ -162,32 +155,25 @@ func (p *Parser) forStatement() (Stmt, error) {
 	}
 
 	var increment Expr
-	if !p.check(ColonTT) {
+	if !p.check(RightParenTT) {
 		increment, err = p.expression()
 		if err != nil {
 			return nil, err
 		}
 	}
-	_, err = p.consume(ColonTT, "Expect ':' after for clauses.")
-	if err != nil {
-		return nil, err
-	}
-	_, err = p.consume(NewlineTT, "Expect '\\n' after for clauses.")
-	if err != nil {
-		return nil, err
-	}
+	_, err = p.consume(RightParenTT, "Expect ')' after for clauses.")
 
-	keyword, err := p.consume(LeftBraceTT, "Expect '{' for `for` loop body")
+	// keyword, err := p.consume(LeftBraceTT, "Expect '{' for `for` loop body")
 	if err != nil {
 		return nil, err
 	}
-	body, err := p.blockStatement(ForBlock)
+	body, err := p.statement()
 	if err != nil {
 		return nil, err
 	}
 
 	if increment != nil {
-		body = NewBlock([]Stmt{body, NewExpression(increment)}, keyword, ForBlock)
+		body = NewBlock([]Stmt{body, NewExpression(increment)})
 	}
 
 	if condition == nil {
@@ -196,61 +182,58 @@ func (p *Parser) forStatement() (Stmt, error) {
 	body = NewWhile(condition, body)
 
 	if initializer != nil {
-		body = NewBlock([]Stmt{initializer, body}, keyword, ForBlock)
+		body = NewBlock([]Stmt{initializer, body})
 	}
 
 	return body, nil
 }
 
 func (p *Parser) ifStatement() (Stmt, error) {
+	_, err := p.consume(LeftParenTT, "Expect '(' after 'if'.")
+	if err != nil {
+		return nil, err
+	}
 	condition, err := p.expression()
 	if err != nil {
 		return nil, err
 	}
-	_, err = p.consume(ColonTT, "Expect ':' after if condition.")
+	_, err = p.consume(RightParenTT, "Expect ')' after 'if'.")
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = p.consume(NewlineTT, "Expect '\\n' after if condition")
-	if err != nil {
-		return nil, err
-	}
-
-	_, err = p.consume(LeftBraceTT, "Expect '{' for if then block")
-	thenBranch, err := p.blockStatement(IfBlock)
+	// _, err = p.consume(LeftBraceTT, "Expect '{' for if then block")
+	thenBranch, err := p.statement()
 	if err != nil {
 		return nil, err
 	}
 
 	var elseBranch Stmt = nil
-	if p.match(ElseifTT) {
-		elseBranch, err = p.ifStatement()
-		if err != nil {
-			return nil, err
-		}
-		return NewIf(condition, thenBranch, elseBranch), nil
-	}
 	if p.match(ElseTT) {
-		_, err := p.consume(ColonTT, "Expect ':' after else.")
-		if err != nil {
-			return nil, err
-		}
-		_, err = p.consume(NewlineTT, "Expect '\\n' after else")
-		if err != nil {
-			return nil, err
-		}
-		_, err = p.consume(LeftBraceTT, "Expect '{' for if else block")
-		if err != nil {
-			return nil, err
-		}
-		elseBranch, err = p.blockStatement(IfBlock)
+		// _, err = p.consume(LeftBraceTT, "Expect '{' for if else block")
+		// if err != nil {
+		// 	return nil, err
+		// }
+		elseBranch, err = p.statement()
 		if err != nil {
 			return nil, err
 		}
 	}
 
 	return NewIf(condition, thenBranch, elseBranch), nil
+}
+
+func (p *Parser) printStatement() (Stmt, error) {
+	value, err := p.expression()
+	if err != nil {
+		return nil, err
+	}
+	_, err = p.consumeTerm()
+	if err != nil {
+		return nil, err
+	}
+
+	return NewPrint(value), nil
 }
 
 func (p *Parser) returnStatement() (Stmt, error) {
@@ -272,23 +255,17 @@ func (p *Parser) returnStatement() (Stmt, error) {
 }
 
 func (p *Parser) whileStatement() (Stmt, error) {
+	_, err := p.consume(LeftParenTT, "Expect '(' for while body")
 	condition, err := p.expression()
 	if err != nil {
 		return nil, err
 	}
-	_, err = p.consume(ColonTT, "Expect ':' after condition")
+	_, err = p.consume(RightParenTT, "Expect ')' for while body")
 	if err != nil {
 		return nil, err
 	}
-	_, err = p.consume(NewlineTT, "Expect '\\n' after condition")
-	if err != nil {
-		return nil, err
-	}
-	_, err = p.consume(LeftBraceTT, "Expect '{' for while body")
-	if err != nil {
-		return nil, err
-	}
-	body, err := p.blockStatement(WhileBlock)
+
+	body, err := p.statement()
 	if err != nil {
 		return nil, err
 	}
@@ -324,8 +301,8 @@ func (p *Parser) expressionStatement() (Stmt, error) {
 		return nil, err
 	}
 
-	// _, err = p.consume(Semicolon, "Expect ';' after expression")
-	_, err = p.consumeTerm()
+	_, err = p.consume(SemicolonTT, "Expect ';' after expression")
+	// _, err = p.consumeTerm()
 	if err != nil {
 		return nil, err
 	}
@@ -334,22 +311,6 @@ func (p *Parser) expressionStatement() (Stmt, error) {
 }
 
 func (p *Parser) function(kind string) (Stmt, error) {
-	if p.match(PassTT) {
-		// dummy function
-		_, err := p.consumeTerm()
-		if err != nil {
-			return nil, err
-		}
-
-		return NewFunction(
-			p.previous(),
-			[]*Token{},
-			[]Stmt{
-				NewExpression(NewLiteral("pass")),
-			},
-		), nil
-	}
-
 	name, err := p.consume(IdentifierTT, "Expect "+kind+" name.")
 	if err != nil {
 		return nil, err
@@ -384,14 +345,6 @@ func (p *Parser) function(kind string) (Stmt, error) {
 		return nil, err
 	}
 
-	_, err = p.consume(ColonTT, "Expect ':' after '('")
-	if err != nil {
-		return nil, err
-	}
-	_, err = p.consume(NewlineTT, "Expect '\\n' before "+kind+" body.")
-	if err != nil {
-		return nil, err
-	}
 	_, err = p.consume(LeftBraceTT, "Expected an indented block as "+kind+" body.")
 	if err != nil {
 		return nil, err
@@ -643,9 +596,6 @@ func (p *Parser) primary() (Expr, error) {
 	if p.match(NilTT) {
 		return NewLiteral(nil), nil
 	}
-	if p.match(PassTT) {
-		return NewLiteral("pass"), nil
-	}
 	if p.match(NumberTT, StringTT) {
 		return NewLiteral(p.previous().Literal), nil
 	}
@@ -680,9 +630,6 @@ func (p *Parser) primary() (Expr, error) {
 
 		return NewGrouping(expr), nil
 	}
-	if p.match(NewlineTT) {
-		return NewLiteral('\n'), nil
-	}
 
 	return nil, p.NewParseError(p.peek(), "Expect expression.")
 }
@@ -707,18 +654,12 @@ func (p *Parser) consume(typ TokenType, message string) (*Token, error) {
 }
 
 func (p *Parser) consumeTerm() (*Token, error) {
-	if p.check(NewlineTT) {
-		return p.advance(), nil
-	}
 	if p.check(SemicolonTT) {
 		t := p.advance()
-		if p.check(NewlineTT) {
-			p.advance()
-		}
 		return t, nil
 	}
 
-	return nil, p.NewParseError(p.peek(), "Expect ';' or '\\n' after expression")
+	return nil, p.NewParseError(p.peek(), "Expect ';' after expression")
 }
 
 func (p *Parser) check(typ TokenType) bool {
@@ -754,8 +695,6 @@ func (p *Parser) synchronize() {
 		switch p.previous().Type {
 		case SemicolonTT:
 			return
-		case NewlineTT:
-			return
 		}
 		// if p.previous().Type == Semicolon {
 		// 	return
@@ -773,6 +712,8 @@ func (p *Parser) synchronize() {
 		case IfTT:
 			return
 		case WhileTT:
+			return
+		case PrintTT:
 			return
 		case ReturnTT:
 			return

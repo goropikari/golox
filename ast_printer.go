@@ -1,4 +1,4 @@
-package tlps
+package golox
 
 import (
 	"bytes"
@@ -168,6 +168,10 @@ func (ap *AstPrinter) visitIfStmt(i *If) (interface{}, error) {
 
 func (ap *AstPrinter) visitIncludeStmt(i *Include) (interface{}, error) {
 	return "(include " + i.Path.Lexeme + ")", nil
+}
+
+func (ap *AstPrinter) visitPrintStmt(p *Print) (interface{}, error) {
+	return ap.parenthesizeExpr("print", p.Expression)
 }
 
 func (ap *AstPrinter) visitReturnStmt(r *Return) (interface{}, error) {

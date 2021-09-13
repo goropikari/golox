@@ -1,4 +1,4 @@
-package tlps
+package golox
 
 // NativeCallable is interface to call native function
 type NativeCallable interface {
@@ -12,7 +12,7 @@ type NativeFunction struct {
 }
 
 // NewNativeFunction is constructor of NativeFunction
-func NewNativeFunction(function NativeCallable) TLPSCallable {
+func NewNativeFunction(function NativeCallable) GoLoxCallable {
 	return &NativeFunction{
 		Function: function,
 	}

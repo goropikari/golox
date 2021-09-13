@@ -1,15 +1,15 @@
-package tlps
+package golox
 
-// TLPSFunction is struct of tlps function
-type TLPSFunction struct {
+// GoLoxFunction is struct of golox function
+type GoLoxFunction struct {
 	declaration   *Function
 	closure       *Environment
 	IsInitializer bool
 }
 
-// NewTLPSFunction is constructor of TLPSFunction
-func NewTLPSFunction(declaration *Function, closure *Environment, IsInitializer bool) *TLPSFunction {
-	return &TLPSFunction{
+// NewGoLoxFunction is constructor of GoLoxFunction
+func NewGoLoxFunction(declaration *Function, closure *Environment, IsInitializer bool) *GoLoxFunction {
+	return &GoLoxFunction{
 		declaration:   declaration,
 		closure:       closure,
 		IsInitializer: IsInitializer,
@@ -17,7 +17,7 @@ func NewTLPSFunction(declaration *Function, closure *Environment, IsInitializer 
 }
 
 // Call calls the function
-func (lf *TLPSFunction) Call(interpreter *Interpreter, arguments []interface{}) (interface{}, error) {
+func (lf *GoLoxFunction) Call(interpreter *Interpreter, arguments []interface{}) (interface{}, error) {
 	environment := NewEnvironment(lf.closure)
 	for i, param := range lf.declaration.Params {
 		environment.Define(param.Lexeme, arguments[i])
@@ -45,16 +45,16 @@ func (lf *TLPSFunction) Call(interpreter *Interpreter, arguments []interface{}) 
 }
 
 // Arity returns arity of function
-func (lf *TLPSFunction) Arity() int {
+func (lf *GoLoxFunction) Arity() int {
 	return len(lf.declaration.Params)
 }
 
-func (lc *TLPSFunction) Bind(instance *TLPSInstance) *TLPSFunction {
+func (lc *GoLoxFunction) Bind(instance *GoLoxInstance) *GoLoxFunction {
 	environment := NewEnvironment(lc.closure)
 	environment.Define("this", instance)
-	return NewTLPSFunction(lc.declaration, environment, lc.IsInitializer)
+	return NewGoLoxFunction(lc.declaration, environment, lc.IsInitializer)
 }
 
-func (lf *TLPSFunction) String() string {
+func (lf *GoLoxFunction) String() string {
 	return "<fn " + lf.declaration.Name.Lexeme + ">"
 }

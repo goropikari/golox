@@ -1,338 +1,275 @@
-package tlps_test
+package golox_test
 
 import (
 	"fmt"
 	"testing"
 
-	"github.com/goropikari/tlps"
+	"github.com/goropikari/golox"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestParser(t *testing.T) {
-	r := tlps.NewRuntime()
+	r := golox.NewRuntime()
 
 	var tests = []struct {
 		name     string
-		expected []tlps.Stmt
-		given    tlps.TokenList
+		expected []golox.Stmt
+		given    golox.TokenList
 	}{
 		{
 			name: "1 + 2 * 3",
-			expected: []tlps.Stmt{
-				tlps.NewExpression(
-					tlps.NewBinary(
-						tlps.NewLiteral(1.0),
-						tlps.NewToken(tlps.PlusTT, "+", nil, 1),
-						tlps.NewBinary(
-							tlps.NewLiteral(2.0),
-							tlps.NewToken(tlps.StarTT, "*", nil, 1),
-							tlps.NewLiteral(3.0),
+			expected: []golox.Stmt{
+				golox.NewExpression(
+					golox.NewBinary(
+						golox.NewLiteral(1.0),
+						golox.NewToken(golox.PlusTT, "+", nil, 1),
+						golox.NewBinary(
+							golox.NewLiteral(2.0),
+							golox.NewToken(golox.StarTT, "*", nil, 1),
+							golox.NewLiteral(3.0),
 						),
 					),
 				),
 			},
-			given: tlps.TokenList{
-				tlps.NewToken(tlps.NumberTT, "1", 1.0, 1),
-				tlps.NewToken(tlps.PlusTT, "+", nil, 1),
-				tlps.NewToken(tlps.NumberTT, "2", 2.0, 1),
-				tlps.NewToken(tlps.StarTT, "*", nil, 1),
-				tlps.NewToken(tlps.NumberTT, "3", 3.0, 1),
-				tlps.NewToken(tlps.SemicolonTT, ";", nil, 1),
-				tlps.NewToken(tlps.EOFTT, "", nil, 1),
+			given: golox.TokenList{
+				golox.NewToken(golox.NumberTT, "1", 1.0, 1),
+				golox.NewToken(golox.PlusTT, "+", nil, 1),
+				golox.NewToken(golox.NumberTT, "2", 2.0, 1),
+				golox.NewToken(golox.StarTT, "*", nil, 1),
+				golox.NewToken(golox.NumberTT, "3", 3.0, 1),
+				golox.NewToken(golox.SemicolonTT, ";", nil, 1),
+				golox.NewToken(golox.EOFTT, "", nil, 1),
 			},
 		},
 		{
-			name: "if true:\n  print(1)",
-			expected: []tlps.Stmt{
-				tlps.NewIf(
-					tlps.NewLiteral(true),
-					tlps.NewBlock(
-						[]tlps.Stmt{
-							tlps.NewExpression(
-								tlps.NewCall(
-									tlps.NewVariable(
-										tlps.NewToken(tlps.IdentifierTT, "print", nil, 2),
-									),
-									tlps.NewToken(tlps.RightParenTT, ")", nil, 2),
-									[]tlps.Expr{
-										tlps.NewLiteral(1.0),
-									},
-								),
-							),
+			name: "if (true) { print 1; }",
+			expected: []golox.Stmt{
+				golox.NewIf(
+					golox.NewLiteral(true),
+					golox.NewBlock(
+						[]golox.Stmt{
+							golox.NewPrint(golox.NewLiteral(1.0)),
 						},
-						tlps.NewToken(tlps.LeftBraceTT, "{", nil, 2),
-						tlps.IfBlock,
 					),
 					nil,
 				),
 			},
-			given: tlps.TokenList{
-				tlps.NewToken(tlps.IfTT, "if", nil, 1),
-				tlps.NewToken(tlps.TrueTT, "true", nil, 1),
-				tlps.NewToken(tlps.ColonTT, ":", nil, 1),
-				tlps.NewToken(tlps.NewlineTT, "\n", nil, 1),
-				tlps.NewToken(tlps.LeftBraceTT, "{", nil, 2),
-				tlps.NewToken(tlps.IdentifierTT, "print", nil, 2),
-				tlps.NewToken(tlps.LeftParenTT, "(", nil, 2),
-				tlps.NewToken(tlps.NumberTT, "1", 1.0, 2),
-				tlps.NewToken(tlps.RightParenTT, ")", nil, 2),
-				tlps.NewToken(tlps.NewlineTT, "\n", nil, 1),
-				tlps.NewToken(tlps.RightBraceTT, "}", nil, 2),
-				tlps.NewToken(tlps.EOFTT, "", nil, 1),
+			given: golox.TokenList{
+				golox.NewToken(golox.IfTT, "if", nil, 1),
+				golox.NewToken(golox.LeftParenTT, "(", nil, 1),
+				golox.NewToken(golox.TrueTT, "true", nil, 1),
+				golox.NewToken(golox.RightParenTT, ")", nil, 1),
+				golox.NewToken(golox.LeftBraceTT, "{", nil, 2),
+				golox.NewToken(golox.PrintTT, "print", nil, 2),
+				golox.NewToken(golox.NumberTT, "1", 1.0, 2),
+				golox.NewToken(golox.SemicolonTT, ";", nil, 2),
+				golox.NewToken(golox.RightBraceTT, "}", nil, 2),
+				golox.NewToken(golox.EOFTT, "", nil, 1),
 			},
 		},
 		{
-			name: "if true:\n  print(1)\nelse:\n  print(2)\n",
-			expected: []tlps.Stmt{
-				tlps.NewIf(
-					tlps.NewLiteral(true),
-					tlps.NewBlock(
-						[]tlps.Stmt{
-							tlps.NewExpression(
-								tlps.NewCall(
-									tlps.NewVariable(
-										tlps.NewToken(tlps.IdentifierTT, "print", nil, 2),
-									),
-									tlps.NewToken(tlps.RightParenTT, ")", nil, 2),
-									[]tlps.Expr{
-										tlps.NewLiteral(1.0),
-									},
-								),
-							),
+			name: "if true { print 1; } else { print 2; }",
+			expected: []golox.Stmt{
+				golox.NewIf(
+					golox.NewLiteral(true),
+					golox.NewBlock(
+						[]golox.Stmt{
+							golox.NewPrint(golox.NewLiteral(1.0)),
 						},
-						tlps.NewToken(tlps.LeftBraceTT, "{", nil, 2),
-						tlps.IfBlock,
 					),
-					tlps.NewBlock(
-						[]tlps.Stmt{
-							tlps.NewExpression(
-								tlps.NewCall(
-									tlps.NewVariable(
-										tlps.NewToken(tlps.IdentifierTT, "print", nil, 4),
-									),
-									tlps.NewToken(tlps.RightParenTT, ")", nil, 4),
-									[]tlps.Expr{
-										tlps.NewLiteral(2.0),
-									},
-								),
-							),
+					golox.NewBlock(
+						[]golox.Stmt{
+							golox.NewPrint(golox.NewLiteral(2.0)),
 						},
-						tlps.NewToken(tlps.LeftBraceTT, "{", nil, 4),
-						tlps.IfBlock,
 					),
 				),
 			},
-			given: tlps.TokenList{
+			given: golox.TokenList{
 				// then branch
-				tlps.NewToken(tlps.IfTT, "if", nil, 1),
-				tlps.NewToken(tlps.TrueTT, "true", nil, 1),
-				tlps.NewToken(tlps.ColonTT, ":", nil, 1),
-				tlps.NewToken(tlps.NewlineTT, "\n", nil, 1),
-				tlps.NewToken(tlps.LeftBraceTT, "{", nil, 2),
-				tlps.NewToken(tlps.IdentifierTT, "print", nil, 2),
-				tlps.NewToken(tlps.LeftParenTT, "(", nil, 2),
-				tlps.NewToken(tlps.NumberTT, "1", 1.0, 2),
-				tlps.NewToken(tlps.RightParenTT, ")", nil, 2),
-				tlps.NewToken(tlps.NewlineTT, "\n", nil, 1),
-				tlps.NewToken(tlps.RightBraceTT, "}", nil, 2),
+				golox.NewToken(golox.IfTT, "if", nil, 1),
+				golox.NewToken(golox.LeftParenTT, "(", nil, 1),
+				golox.NewToken(golox.TrueTT, "true", nil, 1),
+				golox.NewToken(golox.RightParenTT, ")", nil, 1),
+				golox.NewToken(golox.LeftBraceTT, "{", nil, 2),
+				golox.NewToken(golox.PrintTT, "print", nil, 2),
+				golox.NewToken(golox.NumberTT, "1", 1.0, 2),
+				golox.NewToken(golox.SemicolonTT, ";", nil, 2),
+				golox.NewToken(golox.RightBraceTT, "}", nil, 2),
 
 				// else branch
-				tlps.NewToken(tlps.ElseTT, "else", nil, 2),
-				tlps.NewToken(tlps.ColonTT, ":", nil, 2),
-				tlps.NewToken(tlps.NewlineTT, "\n", nil, 2),
-				tlps.NewToken(tlps.LeftBraceTT, "{", nil, 4),
-				tlps.NewToken(tlps.IdentifierTT, "print", nil, 4),
-				tlps.NewToken(tlps.LeftParenTT, "(", nil, 4),
-				tlps.NewToken(tlps.NumberTT, "2", 2.0, 4),
-				tlps.NewToken(tlps.RightParenTT, ")", nil, 4),
-				tlps.NewToken(tlps.NewlineTT, "\n", nil, 4),
-				tlps.NewToken(tlps.RightBraceTT, "}", nil, 4),
-				tlps.NewToken(tlps.EOFTT, "", nil, 4),
+				golox.NewToken(golox.ElseTT, "else", nil, 2),
+				golox.NewToken(golox.LeftBraceTT, "{", nil, 4),
+				golox.NewToken(golox.PrintTT, "print", nil, 4),
+				golox.NewToken(golox.NumberTT, "2", 2.0, 4),
+				golox.NewToken(golox.SemicolonTT, ";", nil, 4),
+				golox.NewToken(golox.RightBraceTT, "}", nil, 4),
+				golox.NewToken(golox.EOFTT, "", nil, 4),
 			},
 		},
 		{
-			name: "for var i = 0; i < 5; i = i + 1:\n  print(i)\n",
-			expected: []tlps.Stmt{
-				tlps.NewBlock(
-					[]tlps.Stmt{
-						tlps.NewVar(
-							tlps.NewToken(tlps.IdentifierTT, "i", nil, 1),
-							tlps.NewLiteral(0.0),
+			name: "for (var i = 0; i < 5; i = i + 1) { print i; }",
+			expected: []golox.Stmt{
+				golox.NewBlock(
+					[]golox.Stmt{
+						golox.NewVar(
+							golox.NewToken(golox.IdentifierTT, "i", nil, 1),
+							golox.NewLiteral(0.0),
 						),
-						tlps.NewWhile(
-							tlps.NewBinary(
-								tlps.NewVariable(tlps.NewToken(tlps.IdentifierTT, "i", nil, 1)),
-								tlps.NewToken(tlps.LessTT, "<", nil, 1),
-								tlps.NewLiteral(5.0),
+						golox.NewWhile(
+							golox.NewBinary(
+								golox.NewVariable(golox.NewToken(golox.IdentifierTT, "i", nil, 1)),
+								golox.NewToken(golox.LessTT, "<", nil, 1),
+								golox.NewLiteral(5.0),
 							),
-							tlps.NewBlock(
-								[]tlps.Stmt{
-									tlps.NewBlock(
-										[]tlps.Stmt{
-											tlps.NewExpression(
-												tlps.NewCall(
-													tlps.NewVariable(
-														tlps.NewToken(tlps.IdentifierTT, "print", nil, 2),
-													),
-													tlps.NewToken(tlps.RightParenTT, ")", nil, 2),
-													[]tlps.Expr{
-														tlps.NewVariable(
-															tlps.NewToken(tlps.IdentifierTT, "i", nil, 2),
-														),
-													},
+							golox.NewBlock(
+								[]golox.Stmt{
+									golox.NewBlock(
+										[]golox.Stmt{
+											golox.NewPrint(
+												golox.NewVariable(
+													golox.NewToken(golox.IdentifierTT, "i", nil, 2),
 												),
 											),
 										},
-										tlps.NewToken(tlps.LeftBraceTT, "{", nil, 2),
-										tlps.ForBlock,
 									),
-									tlps.NewExpression(
-										tlps.NewAssign(
-											tlps.NewToken(tlps.IdentifierTT, "i", nil, 1),
-											tlps.NewBinary(
-												tlps.NewVariable(
-													tlps.NewToken(tlps.IdentifierTT, "i", nil, 1),
+									golox.NewExpression(
+										golox.NewAssign(
+											golox.NewToken(golox.IdentifierTT, "i", nil, 1),
+											golox.NewBinary(
+												golox.NewVariable(
+													golox.NewToken(golox.IdentifierTT, "i", nil, 1),
 												),
-												tlps.NewToken(tlps.PlusTT, "+", nil, 1),
-												tlps.NewLiteral(1.0),
+												golox.NewToken(golox.PlusTT, "+", nil, 1),
+												golox.NewLiteral(1.0),
 											),
 										),
 									),
 								},
-								tlps.NewToken(tlps.LeftBraceTT, "{", nil, 2),
-								tlps.ForBlock,
 							),
 						),
 					},
-					tlps.NewToken(tlps.LeftBraceTT, "{", nil, 2),
-					tlps.ForBlock,
 				),
 			},
-			given: tlps.TokenList{
-				tlps.NewToken(tlps.ForTT, "for", nil, 1),
-				tlps.NewToken(tlps.VarTT, "var", nil, 1),
-				tlps.NewToken(tlps.IdentifierTT, "i", nil, 1),
-				tlps.NewToken(tlps.EqualTT, "=", nil, 1),
-				tlps.NewToken(tlps.NumberTT, "0", 0.0, 1),
-				tlps.NewToken(tlps.SemicolonTT, ";", nil, 1),
-				tlps.NewToken(tlps.IdentifierTT, "i", nil, 1),
-				tlps.NewToken(tlps.LessTT, "<", nil, 1),
-				tlps.NewToken(tlps.NumberTT, "5", 5.0, 1),
-				tlps.NewToken(tlps.SemicolonTT, ";", nil, 1),
-				tlps.NewToken(tlps.IdentifierTT, "i", nil, 1),
-				tlps.NewToken(tlps.EqualTT, "=", nil, 1),
-				tlps.NewToken(tlps.IdentifierTT, "i", nil, 1),
-				tlps.NewToken(tlps.PlusTT, "+", nil, 1),
-				tlps.NewToken(tlps.NumberTT, "1", 1.0, 1),
-				tlps.NewToken(tlps.ColonTT, ":", nil, 1),
-				tlps.NewToken(tlps.NewlineTT, "\n", nil, 1),
-				tlps.NewToken(tlps.LeftBraceTT, "{", nil, 2),
-				tlps.NewToken(tlps.IdentifierTT, "print", nil, 2),
-				tlps.NewToken(tlps.LeftParenTT, "(", nil, 2),
-				tlps.NewToken(tlps.IdentifierTT, "i", nil, 2),
-				tlps.NewToken(tlps.RightParenTT, ")", nil, 2),
-				tlps.NewToken(tlps.NewlineTT, "\n", nil, 2),
-				tlps.NewToken(tlps.RightBraceTT, "}", nil, 2),
-				tlps.NewToken(tlps.EOFTT, "", nil, 2),
+			given: golox.TokenList{
+				golox.NewToken(golox.ForTT, "for", nil, 1),
+				golox.NewToken(golox.LeftParenTT, "(", nil, 1),
+				golox.NewToken(golox.VarTT, "var", nil, 1),
+				golox.NewToken(golox.IdentifierTT, "i", nil, 1),
+				golox.NewToken(golox.EqualTT, "=", nil, 1),
+				golox.NewToken(golox.NumberTT, "0", 0.0, 1),
+				golox.NewToken(golox.SemicolonTT, ";", nil, 1),
+				golox.NewToken(golox.IdentifierTT, "i", nil, 1),
+				golox.NewToken(golox.LessTT, "<", nil, 1),
+				golox.NewToken(golox.NumberTT, "5", 5.0, 1),
+				golox.NewToken(golox.SemicolonTT, ";", nil, 1),
+				golox.NewToken(golox.IdentifierTT, "i", nil, 1),
+				golox.NewToken(golox.EqualTT, "=", nil, 1),
+				golox.NewToken(golox.IdentifierTT, "i", nil, 1),
+				golox.NewToken(golox.PlusTT, "+", nil, 1),
+				golox.NewToken(golox.NumberTT, "1", 1.0, 1),
+				golox.NewToken(golox.RightParenTT, ")", nil, 1),
+				golox.NewToken(golox.LeftBraceTT, "{", nil, 2),
+				golox.NewToken(golox.PrintTT, "print", nil, 2),
+				golox.NewToken(golox.IdentifierTT, "i", nil, 2),
+				golox.NewToken(golox.SemicolonTT, ";", nil, 2),
+				golox.NewToken(golox.RightBraceTT, "}", nil, 2),
+				golox.NewToken(golox.EOFTT, "", nil, 2),
 			},
 		},
 		{
 			name: "function",
-			expected: []tlps.Stmt{
-				// fun f(x, y):
-				//   return x + y
-				tlps.NewFunction(
-					tlps.NewToken(tlps.IdentifierTT, "f", nil, 1),
-					[]*tlps.Token{
-						tlps.NewToken(tlps.IdentifierTT, "x", nil, 1),
-						tlps.NewToken(tlps.IdentifierTT, "y", nil, 1),
+			expected: []golox.Stmt{
+				// fun f(x, y) {
+				//   return x + y;
+				// }
+				golox.NewFunction(
+					golox.NewToken(golox.IdentifierTT, "f", nil, 1),
+					[]*golox.Token{
+						golox.NewToken(golox.IdentifierTT, "x", nil, 1),
+						golox.NewToken(golox.IdentifierTT, "y", nil, 1),
 					},
-					[]tlps.Stmt{
-						tlps.NewReturn(
-							tlps.NewToken(tlps.ReturnTT, "return", nil, 2),
-							tlps.NewBinary(
-								tlps.NewVariable(tlps.NewToken(tlps.IdentifierTT, "x", nil, 2)),
-								tlps.NewToken(tlps.PlusTT, "+", nil, 2),
-								tlps.NewVariable(tlps.NewToken(tlps.IdentifierTT, "y", nil, 2)),
+					[]golox.Stmt{
+						golox.NewReturn(
+							golox.NewToken(golox.ReturnTT, "return", nil, 2),
+							golox.NewBinary(
+								golox.NewVariable(golox.NewToken(golox.IdentifierTT, "x", nil, 2)),
+								golox.NewToken(golox.PlusTT, "+", nil, 2),
+								golox.NewVariable(golox.NewToken(golox.IdentifierTT, "y", nil, 2)),
 							),
 						),
 					},
 				),
 			},
-			given: []*tlps.Token{
-				tlps.NewToken(tlps.FunTT, "fun", nil, 1),
-				tlps.NewToken(tlps.IdentifierTT, "f", nil, 1),
-				tlps.NewToken(tlps.LeftParenTT, "(", nil, 1),
-				tlps.NewToken(tlps.IdentifierTT, "x", nil, 1),
-				tlps.NewToken(tlps.CommaTT, ",", nil, 1),
-				tlps.NewToken(tlps.IdentifierTT, "y", nil, 1),
-				tlps.NewToken(tlps.RightParenTT, ")", nil, 1),
-				tlps.NewToken(tlps.ColonTT, ":", nil, 1),
-				tlps.NewToken(tlps.NewlineTT, "\\n", nil, 1),
-				tlps.NewToken(tlps.LeftBraceTT, "{", nil, 2),
-				tlps.NewToken(tlps.ReturnTT, "return", nil, 2),
-				tlps.NewToken(tlps.IdentifierTT, "x", nil, 2),
-				tlps.NewToken(tlps.PlusTT, "+", nil, 2),
-				tlps.NewToken(tlps.IdentifierTT, "y", nil, 2),
-				tlps.NewToken(tlps.NewlineTT, "\\n", nil, 2),
-				tlps.NewToken(tlps.RightBraceTT, "}", nil, 2),
-				tlps.NewToken(tlps.EOFTT, "", nil, 2),
+			given: []*golox.Token{
+				golox.NewToken(golox.FunTT, "fun", nil, 1),
+				golox.NewToken(golox.IdentifierTT, "f", nil, 1),
+				golox.NewToken(golox.LeftParenTT, "(", nil, 1),
+				golox.NewToken(golox.IdentifierTT, "x", nil, 1),
+				golox.NewToken(golox.CommaTT, ",", nil, 1),
+				golox.NewToken(golox.IdentifierTT, "y", nil, 1),
+				golox.NewToken(golox.RightParenTT, ")", nil, 1),
+				golox.NewToken(golox.LeftBraceTT, "{", nil, 2),
+				golox.NewToken(golox.ReturnTT, "return", nil, 2),
+				golox.NewToken(golox.IdentifierTT, "x", nil, 2),
+				golox.NewToken(golox.PlusTT, "+", nil, 2),
+				golox.NewToken(golox.IdentifierTT, "y", nil, 2),
+				golox.NewToken(golox.SemicolonTT, ";", nil, 2),
+				golox.NewToken(golox.RightBraceTT, "}", nil, 2),
+				golox.NewToken(golox.EOFTT, "", nil, 2),
 			},
 		},
 		{
 			name: "class",
-			expected: []tlps.Stmt{
-				// class Hoge:
-				//   init(x):
-				//     this.x = x
-				tlps.NewClass(
-					tlps.NewToken(tlps.IdentifierTT, "Hoge", nil, 1),
+			expected: []golox.Stmt{
+				// class Hoge {
+				//   init(x) {
+				//     this.x = x;
+				//   }
+				// }
+				golox.NewClass(
+					golox.NewToken(golox.IdentifierTT, "Hoge", nil, 1),
 					nil,
-					[]*tlps.Function{
-						tlps.NewFunction(
-							tlps.NewToken(tlps.IdentifierTT, "init", nil, 2),
-							[]*tlps.Token{
-								tlps.NewToken(tlps.IdentifierTT, "x", nil, 2),
+					[]*golox.Function{
+						golox.NewFunction(
+							golox.NewToken(golox.IdentifierTT, "init", nil, 2),
+							[]*golox.Token{
+								golox.NewToken(golox.IdentifierTT, "x", nil, 2),
 							},
-							[]tlps.Stmt{
-								tlps.NewExpression(
-									tlps.NewSet(
-										tlps.NewThis(
-											tlps.NewToken(tlps.ThisTT, "this", nil, 3),
+							[]golox.Stmt{
+								golox.NewExpression(
+									golox.NewSet(
+										golox.NewThis(
+											golox.NewToken(golox.ThisTT, "this", nil, 3),
 										),
-										tlps.NewToken(tlps.IdentifierTT, "x", nil, 3),
-										tlps.NewVariable(
-											tlps.NewToken(tlps.IdentifierTT, "x", nil, 3),
+										golox.NewToken(golox.IdentifierTT, "x", nil, 3),
+										golox.NewVariable(
+											golox.NewToken(golox.IdentifierTT, "x", nil, 3),
 										),
 									),
 								),
 							},
-						).(*tlps.Function),
+						).(*golox.Function),
 					},
 				),
 			},
-			given: []*tlps.Token{
-				tlps.NewToken(tlps.ClassTT, "class", nil, 1),
-				tlps.NewToken(tlps.IdentifierTT, "Hoge", nil, 1),
-				tlps.NewToken(tlps.ColonTT, ":", nil, 1),
-				tlps.NewToken(tlps.NewlineTT, "\n", nil, 1),
-				tlps.NewToken(tlps.LeftBraceTT, "{", nil, 2),
-				tlps.NewToken(tlps.IdentifierTT, "init", nil, 2),
-				tlps.NewToken(tlps.LeftParenTT, "(", nil, 2),
-				tlps.NewToken(tlps.IdentifierTT, "x", nil, 2),
-				tlps.NewToken(tlps.RightParenTT, ")", nil, 2),
-				tlps.NewToken(tlps.ColonTT, ":", nil, 2),
-				tlps.NewToken(tlps.NewlineTT, "\n", nil, 2),
-				tlps.NewToken(tlps.LeftBraceTT, "{", nil, 3),
-				tlps.NewToken(tlps.ThisTT, "this", nil, 3),
-				tlps.NewToken(tlps.DotTT, ".", nil, 3),
-				tlps.NewToken(tlps.IdentifierTT, "x", nil, 3),
-				tlps.NewToken(tlps.EqualTT, "=", nil, 3),
-				tlps.NewToken(tlps.IdentifierTT, "x", nil, 3),
-				tlps.NewToken(tlps.NewlineTT, "\n", nil, 3),
-				tlps.NewToken(tlps.RightBraceTT, "}", nil, 3),
-				tlps.NewToken(tlps.RightBraceTT, "}", nil, 3),
-				tlps.NewToken(tlps.EOFTT, "", nil, 3),
+			given: []*golox.Token{
+				golox.NewToken(golox.ClassTT, "class", nil, 1),
+				golox.NewToken(golox.IdentifierTT, "Hoge", nil, 1),
+				golox.NewToken(golox.LeftBraceTT, "{", nil, 2),
+				golox.NewToken(golox.IdentifierTT, "init", nil, 2),
+				golox.NewToken(golox.LeftParenTT, "(", nil, 2),
+				golox.NewToken(golox.IdentifierTT, "x", nil, 2),
+				golox.NewToken(golox.RightParenTT, ")", nil, 2),
+				golox.NewToken(golox.LeftBraceTT, "{", nil, 3),
+				golox.NewToken(golox.ThisTT, "this", nil, 3),
+				golox.NewToken(golox.DotTT, ".", nil, 3),
+				golox.NewToken(golox.IdentifierTT, "x", nil, 3),
+				golox.NewToken(golox.EqualTT, "=", nil, 3),
+				golox.NewToken(golox.IdentifierTT, "x", nil, 3),
+				golox.NewToken(golox.SemicolonTT, ";", nil, 3),
+				golox.NewToken(golox.RightBraceTT, "}", nil, 3),
+				golox.NewToken(golox.RightBraceTT, "}", nil, 3),
+				golox.NewToken(golox.EOFTT, "", nil, 3),
 			},
 		},
 	}
@@ -340,9 +277,9 @@ func TestParser(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			parser := tlps.NewParser(r, tt.given)
+			parser := golox.NewParser(r, tt.given)
 			actual, _ := parser.Parse()
-			ast := tlps.NewAstPrinter()
+			ast := golox.NewAstPrinter()
 			fmt.Println(ast.Print(actual))
 			fmt.Println(ast.Print(tt.expected))
 			assert.Equal(t, tt.expected, actual)

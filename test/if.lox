@@ -1,0 +1,61 @@
+include "testing.lox";
+
+var x = "";
+if (true) {
+  x = "hoge1";
+} else if (true) {
+  x = "hoge2";
+} else {
+  x = "hoge3";
+}
+
+test("hoge1", x);
+
+
+if (false) {
+  x = "hoge1";
+} else if (true) {
+  x = "hoge2";
+} else {
+  x = "hoge3";
+}
+
+test("hoge2", x);
+
+
+if (false) {
+  x = "hoge1";
+} else if (false) {
+  x = "hoge2";
+} else {
+  x = "hoge3";
+}
+
+test("hoge3", x);
+
+
+x = "xxx";
+if (false) {
+    x = "piyo1";
+} else if (true) {
+    if (true) {
+        x = "piyo2";
+    }
+} else {
+    x = "piyo3";
+}
+
+test("piyo2", x);
+
+x = "xxx";
+if (false) {
+    x = "piyo1";
+} else if (true) {
+    if (false) {
+        x = "piyo2";
+    }
+} else {
+    x = "piyo3";
+}
+
+test("xxx", x);

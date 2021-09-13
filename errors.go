@@ -1,4 +1,4 @@
-package tlps
+package golox
 
 var (
 	ParseError   = NewCustomError("ParseError")

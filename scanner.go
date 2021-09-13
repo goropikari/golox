@@ -1,4 +1,4 @@
-package tlps
+package golox
 
 import (
 	"bytes"
@@ -9,8 +9,6 @@ import (
 // Scanner is struct of Scanner
 type Scanner struct {
 	keywords    map[string]TokenType
-	indent      *IndentStack
-	isFirst     bool // use when count indentation level
 	runtime     *Runtime
 	source      *bytes.Buffer
 	sourceRunes []rune
@@ -34,7 +32,7 @@ func NewScanner(r *Runtime, b *bytes.Buffer) *Scanner {
 		"include": IncludeTT,
 		"nil":     NilTT,
 		"or":      OrTT,
-		"pass":    PassTT,
+		"print":   PrintTT,
 		"return":  ReturnTT,
 		"super":   SuperTT,
 		"this":    ThisTT,
@@ -43,13 +41,8 @@ func NewScanner(r *Runtime, b *bytes.Buffer) *Scanner {
 		"while":   WhileTT,
 	}
 
-	indent := NewIndentStack()
-	indent.Push(0)
-
 	return &Scanner{
 		keywords:    keywords,
-		indent:      indent,
-		isFirst:     true,
 		runtime:     r,
 		source:      b,
 		sourceRunes: bytes.Runes(b.Bytes()),
@@ -66,12 +59,6 @@ func (s *Scanner) ScanTokens() TokenList {
 		s.addBlock()
 		s.start = s.current
 		s.scanToken()
-		s.removeUselessNewline()
-	}
-
-	for s.indent.Peek() != 0 {
-		s.indent.Pop()
-		s.tokens = append(s.tokens, NewToken(RightBraceTT, "}", nil, s.line))
 	}
 
 	s.tokens = append(s.tokens, NewToken(EOFTT, "", nil, s.line))
@@ -88,12 +75,12 @@ func (s *Scanner) scanToken() {
 	case ')':
 		s.addToken(RightParenTT, nil)
 		break
-	// case '{':
-	// 	s.addToken(LeftBraceTT, nil)
-	// 	break
-	// case '}':
-	// 	s.addToken(RightBraceTT, nil)
-	// 	break
+	case '{':
+		s.addToken(LeftBraceTT, nil)
+		break
+	case '}':
+		s.addToken(RightBraceTT, nil)
+		break
 	case ',':
 		s.addToken(CommaTT, nil)
 		break
@@ -108,9 +95,6 @@ func (s *Scanner) scanToken() {
 		break
 	case ';':
 		s.addToken(SemicolonTT, nil)
-		break
-	case ':':
-		s.addToken(ColonTT, nil)
 		break
 	case '*':
 		s.addToken(StarTT, nil)
@@ -162,7 +146,6 @@ func (s *Scanner) scanToken() {
 	case '\t':
 		break
 	case '\n':
-		s.addNewline()
 		break
 	case '"':
 		s.addString()
@@ -177,24 +160,6 @@ func (s *Scanner) scanToken() {
 		}
 		break
 	}
-}
-
-func (s *Scanner) removeUselessNewline() {
-	tokens := make([]*Token, 0)
-	isPreviousNewline := true
-	for _, token := range s.tokens {
-		if token.Type == NewlineTT {
-			if !isPreviousNewline {
-				tokens = append(tokens, token)
-			}
-			isPreviousNewline = true
-		} else {
-			isPreviousNewline = false
-			tokens = append(tokens, token)
-		}
-	}
-
-	s.tokens = tokens
 }
 
 func (s *Scanner) match(expected rune) bool {
@@ -218,52 +183,14 @@ func (s *Scanner) advance() (rune, int, error) {
 }
 
 func (s *Scanner) addToken(tt TokenType, literal interface{}) {
-	s.isFirst = false
 	text := string(s.sourceRunes[s.start:s.current])
 	s.tokens = append(s.tokens, NewToken(tt, text, literal, s.line))
 }
 
-func (s *Scanner) addNewline() {
-	s.tokens = append(s.tokens, NewToken(NewlineTT, "\\n", nil, s.line))
-	s.line++
-	s.isFirst = true
-}
-
 func (s *Scanner) addBlock() {
-	if !s.isFirst {
-		return
-	}
-
-	depth := 0
-	for s.match(' ') {
-		depth++
-	}
-
 	// skip comment or empty line
 	if s.peek() == '\n' || (s.peek() == '/' && s.peekNext() == '/') {
 		return
-	}
-
-	d := s.indent.Peek()
-	if d < depth {
-		s.indent.Push(depth)
-		s.tokens = append(s.tokens, NewToken(LeftBraceTT, "{", nil, s.line))
-	} else if d > depth {
-		cnt := 0
-		for s.indent.Pop() != -1 {
-			cnt++
-			if s.indent.Peek() == depth {
-				break
-			}
-		}
-
-		if s.indent.IsEmpty() {
-			s.runtime.ErrorMessage(s.line, "unindent does not match any outer indentation level")
-		}
-
-		for i := 0; i < cnt; i++ {
-			s.tokens = append(s.tokens, NewToken(RightBraceTT, "}", nil, s.line))
-		}
 	}
 }
 

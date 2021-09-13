@@ -1,9 +1,9 @@
-BIN := tlps
+BIN := golox
 
 build:
 	go build -o $(BIN) ./cmd/...
 
-test:
+test: build
 	go test -v
 	bash ./test/test.sh
 

@@ -5,4 +5,4 @@ COPY . /app/
 
 RUN make
 
-CMD ./tlps
+CMD ./golox

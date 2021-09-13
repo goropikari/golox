@@ -3,7 +3,7 @@ package stack_test
 import (
 	"testing"
 
-	"github.com/goropikari/tlps/collections/stack"
+	"github.com/goropikari/golox/collections/stack"
 	"github.com/stretchr/testify/assert"
 )
 
