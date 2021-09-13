@@ -117,14 +117,6 @@ func (p *Parser) statement() (Stmt, error) {
 	return p.expressionStatement()
 }
 
-func (p *Parser) blockStatement(typ BlockType) (Stmt, error) {
-	b, err := p.block()
-	if err != nil {
-		return nil, err
-	}
-	return NewBlock(b), nil
-}
-
 func (p *Parser) forStatement() (Stmt, error) {
 	_, err := p.consume(LeftParenTT, "Expect '(' after 'for'.")
 	var initializer Stmt
