@@ -11,7 +11,7 @@ TLPS adopts [Off-side rule](https://en.wikipedia.org/wiki/Off-side_rule) like py
 git clone https://github.com/goropikari/tlps
 cd tlps
 docker build -t tlps .
-docker run -it tlps
+docker run -it tlps # launch REPL
 ```
 
 Architecture is based on jlox (tree-walk interpreter) by [munificent/craftinginterpreters](https://github.com/munificent/craftinginterpreters).
@@ -58,8 +58,8 @@ var counter = makeCounter()
 print(counter()) // => 1
 print(counter()) // => 2
 
-# class
-# there is no class variable
+// class
+// there is no class variable
 class Hoge:
   pass
 
@@ -79,6 +79,22 @@ class Hoge:
 var h = Hoge()
 h.name = "hoge piyo" // instance variable can define anytime
 print(h.name) // => hoge piyo
+
+// inheritance
+class A:
+  method():
+    return "a"
+
+class B(A):
+  method():
+    return "b"
+  methodA():
+    return super.method()
+
+class C(B):
+  pass
+
+print(C().methodA()) // => a
 
 // include another file
 include "another.tlps" // path is relative path from the file which describe include statement

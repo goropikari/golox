@@ -80,6 +80,10 @@ func (ap *AstPrinter) visitSetExpr(expr *Set) (interface{}, error) {
 	return "(set " + object + "(name " + expr.Name.Lexeme + ")" + value + ")", nil
 }
 
+func (ap *AstPrinter) visitSuperExpr(expr *Super) (interface{}, error) {
+	return "(super " + expr.Keyword.Lexeme + " " + expr.Method.Lexeme + ")", nil
+}
+
 func (ap *AstPrinter) visitThisExpr(expr *This) (interface{}, error) {
 	return "(this)", nil
 }
@@ -169,7 +173,7 @@ func (ap *AstPrinter) visitIncludeStmt(i *Include) (interface{}, error) {
 func (ap *AstPrinter) visitReturnStmt(r *Return) (interface{}, error) {
 	expr, err := ap.parenthesizeExpr(r.Keyword.Lexeme, r.Value)
 	if err != nil {
-		return "nil", err
+		return "", err
 	}
 
 	return expr, nil

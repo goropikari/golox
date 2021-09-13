@@ -64,6 +64,13 @@ func (p *Parser) classDeclaration() (Stmt, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	var superclass *Variable
+	if p.match(LeftParenTT) {
+		p.consume(IdentifierTT, "Expect superclass name.")
+		superclass = NewVariable(p.previous()).(*Variable)
+		p.consume(RightParenTT, "Expect superclass name.")
+	}
 	_, err = p.consume(ColonTT, "Expect ':' after class name.")
 	if err != nil {
 		return nil, err
@@ -93,7 +100,7 @@ func (p *Parser) classDeclaration() (Stmt, error) {
 
 	_, err = p.consume(RightBraceTT, "Expect '}' after class body")
 
-	return NewClass(name, methods), nil
+	return NewClass(name, superclass, methods), nil
 }
 
 func (p *Parser) statement() (Stmt, error) {
@@ -642,15 +649,24 @@ func (p *Parser) primary() (Expr, error) {
 	if p.match(NumberTT, StringTT) {
 		return NewLiteral(p.previous().Literal), nil
 	}
-
+	if p.match(SuperTT) {
+		keyword := p.previous()
+		_, err := p.consume(DotTT, "Expect '.' after 'super'.")
+		if err != nil {
+			return nil, err
+		}
+		method, err := p.consume(IdentifierTT, "Expect supercrlass method name.")
+		if err != nil {
+			return nil, err
+		}
+		return NewSuper(keyword, method), nil
+	}
 	if p.match(ThisTT) {
 		return NewThis(p.previous()), nil
 	}
-
 	if p.match(IdentifierTT) {
 		return NewVariable(p.previous()), nil
 	}
-
 	if p.match(LeftParenTT) {
 		expr, err := p.expression()
 		if err != nil {
@@ -664,7 +680,6 @@ func (p *Parser) primary() (Expr, error) {
 
 		return NewGrouping(expr), nil
 	}
-
 	if p.match(NewlineTT) {
 		return NewLiteral('\n'), nil
 	}

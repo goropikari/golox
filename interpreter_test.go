@@ -79,7 +79,6 @@ func TestInterpreter(t *testing.T) {
 				),
 			},
 		},
-
 		{
 			name:     "class",
 			expected: "hoge",
@@ -90,6 +89,7 @@ func TestInterpreter(t *testing.T) {
 				// Hoge("hoge").x
 				tlps.NewClass(
 					tlps.NewToken(tlps.IdentifierTT, "Hoge", nil, 1),
+					nil,
 					[]*tlps.Function{
 						tlps.NewFunction(
 							tlps.NewToken(tlps.IdentifierTT, "init", nil, 2),
@@ -124,6 +124,70 @@ func TestInterpreter(t *testing.T) {
 							},
 						),
 						tlps.NewToken(tlps.IdentifierTT, "x", nil, 4),
+					),
+				),
+			},
+		},
+		{
+			name:     "super class",
+			expected: "hoge",
+			given: []tlps.Stmt{
+				// class Hoge:
+				//   init(x):
+				//     this.x = x
+				// class Piyo(Hoge):
+				//   pass
+				// Piyo("hoge").x
+				tlps.NewClass(
+					tlps.NewToken(tlps.IdentifierTT, "Hoge", nil, 1),
+					nil,
+					[]*tlps.Function{
+						tlps.NewFunction(
+							tlps.NewToken(tlps.IdentifierTT, "init", nil, 2),
+							[]*tlps.Token{
+								tlps.NewToken(tlps.IdentifierTT, "x", nil, 2),
+							},
+							[]tlps.Stmt{
+								tlps.NewExpression(
+									tlps.NewSet(
+										tlps.NewThis(
+											tlps.NewToken(tlps.ThisTT, "this", nil, 3),
+										),
+										tlps.NewToken(tlps.IdentifierTT, "x", nil, 3),
+										tlps.NewVariable(
+											tlps.NewToken(tlps.IdentifierTT, "x", nil, 3),
+										),
+									),
+								),
+							},
+						).(*tlps.Function),
+					},
+				),
+				tlps.NewClass(
+					tlps.NewToken(tlps.IdentifierTT, "Piyo", nil, 4),
+					tlps.NewVariable(
+						tlps.NewToken(tlps.IdentifierTT, "Hoge", nil, 4),
+					).(*tlps.Variable),
+					[]*tlps.Function{
+						tlps.NewFunction(
+							tlps.NewToken(tlps.PassTT, "pass", nil, 5),
+							[]*tlps.Token{},
+							[]tlps.Stmt{},
+						).(*tlps.Function),
+					},
+				),
+				tlps.NewExpression(
+					tlps.NewGet(
+						tlps.NewCall(
+							tlps.NewVariable(
+								tlps.NewToken(tlps.IdentifierTT, "Piyo", nil, 6),
+							),
+							tlps.NewToken(tlps.LeftParenTT, "(", nil, 6),
+							[]tlps.Expr{
+								tlps.NewLiteral("hoge"),
+							},
+						),
+						tlps.NewToken(tlps.IdentifierTT, "x", nil, 6),
 					),
 				),
 			},

@@ -210,6 +210,22 @@ func (i *Interpreter) visitSetExpr(expr *Set) (interface{}, error) {
 	return value, nil
 }
 
+func (i *Interpreter) visitSuperExpr(expr *Super) (interface{}, error) {
+	distance := i.Runtime.Locals[expr]
+	sc, _ := i.Runtime.Environment.GetAt(distance, "super")
+	superclass := sc.(*TLPSClass)
+	obj, _ := i.Runtime.Environment.GetAt(distance-1, "this")
+	object := obj.(*TLPSInstance)
+
+	method, _ := superclass.FindMethod(expr.Method.Lexeme)
+
+	if method == nil {
+		return nil, RuntimeError.New(expr.Method, "Undifined property '"+expr.Method.Lexeme+"'.")
+	}
+
+	return method.Bind(object), nil
+}
+
 func (i *Interpreter) visitThisExpr(expr *This) (interface{}, error) {
 	return i.lookUpVariable(expr.Keyword, expr)
 }
@@ -312,7 +328,25 @@ func (i *Interpreter) visitBlockStmt(stmt *Block) (interface{}, error) {
 }
 
 func (i *Interpreter) visitClassStmt(stmt *Class) (interface{}, error) {
+	var superclass *TLPSClass = nil
+	if stmt.Superclass != nil {
+		sc, err := i.evaluate(stmt.Superclass)
+		if err != nil {
+			return nil, err
+		}
+
+		var ok bool
+		if superclass, ok = sc.(*TLPSClass); !ok {
+			return nil, RuntimeError.New(stmt.Superclass.Name, "Superclass must be a class.")
+		}
+	}
+
 	i.Runtime.Environment.Define(stmt.Name.Lexeme, nil)
+
+	if stmt.Superclass != nil {
+		i.Runtime.Environment = NewEnvironment(i.Runtime.Environment)
+		i.Runtime.Environment.Define("super", superclass)
+	}
 
 	methods := make(map[string]*TLPSFunction)
 	for _, method := range stmt.Methods {
@@ -320,7 +354,12 @@ func (i *Interpreter) visitClassStmt(stmt *Class) (interface{}, error) {
 		methods[method.Name.Lexeme] = function
 	}
 
-	klass := NewTLPSClass(stmt.Name.Lexeme, methods)
+	klass := NewTLPSClass(stmt.Name.Lexeme, superclass, methods)
+
+	if superclass != nil {
+		i.Runtime.Environment = i.Runtime.Environment.Enclosing
+	}
+
 	i.Runtime.Environment.Assign(stmt.Name, klass)
 
 	return nil, nil

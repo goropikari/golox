@@ -27,6 +27,7 @@ type ClassType int
 const (
 	NoneCT ClassType = iota
 	ClassCT
+	SubClassCT
 )
 
 // NewResolver is constructor of Resolver
@@ -56,6 +57,28 @@ func (r *Resolver) visitClassStmt(stmt *Class) (interface{}, error) {
 	r.declare(stmt.Name)
 	r.define(stmt.Name)
 
+	if stmt.Superclass != nil {
+		_, err := r.resolveExpr(stmt.Superclass)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// ex. class Hoge(Hoge):
+	if stmt.Superclass != nil && stmt.Name.Lexeme == stmt.Superclass.Name.Lexeme {
+		r.runtime.ErrorTokenMessage(stmt.Superclass.Name, "A class can't inherit from itself.")
+	}
+
+	if stmt.Superclass != nil {
+		r.currentClass = SubClassCT
+		r.resolveExpr(stmt.Superclass)
+	}
+
+	if stmt.Superclass != nil {
+		r.beginScope()
+		r.runtime.Scopes.Peek()["super"] = true
+	}
+
 	r.beginScope()
 	r.runtime.Scopes.Peek()["this"] = true
 
@@ -68,6 +91,10 @@ func (r *Resolver) visitClassStmt(stmt *Class) (interface{}, error) {
 	}
 
 	r.endScope()
+
+	if stmt.Superclass != nil {
+		r.endScope()
+	}
 
 	r.currentClass = enclosigClass
 	return nil, nil
@@ -225,6 +252,17 @@ func (r *Resolver) visitSetExpr(expr *Set) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
+	return nil, nil
+}
+
+func (r *Resolver) visitSuperExpr(expr *Super) (interface{}, error) {
+	if r.currentClass == NoneCT {
+		r.runtime.ErrorTokenMessage(expr.Keyword, "Can't use 'super' outside of a class.")
+	} else if r.currentClass != SubClassCT {
+		r.runtime.ErrorTokenMessage(expr.Keyword, "Can't use 'super' in a class with no superclass.")
+	}
+
+	r.resolveLocal(expr, expr.Keyword)
 	return nil, nil
 }
 

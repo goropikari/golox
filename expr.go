@@ -14,6 +14,7 @@ type VisitorExpr interface {
 	visitLiteralExpr(*Literal) (interface{}, error)
 	visitLogicalExpr(*Logical) (interface{}, error)
 	visitSetExpr(*Set) (interface{}, error)
+	visitSuperExpr(*Super) (interface{}, error)
 	visitThisExpr(*This) (interface{}, error)
 	visitUnaryExpr(*Unary) (interface{}, error)
 	visitVariableExpr(*Variable) (interface{}, error)
@@ -184,6 +185,27 @@ func (s *Set) Accept(visitor VisitorExpr) (interface{}, error) {
 func (rec *Set) IsType(v interface{}) bool {
 	switch v.(type) {
 	case *Set:
+		return true
+	}
+	return false
+}
+
+type Super struct {
+	Keyword *Token
+	Method  *Token
+}
+
+func NewSuper(keyword *Token, method *Token) Expr {
+	return &Super{keyword, method}
+}
+
+func (s *Super) Accept(visitor VisitorExpr) (interface{}, error) {
+	return visitor.visitSuperExpr(s)
+}
+
+func (rec *Super) IsType(v interface{}) bool {
+	switch v.(type) {
+	case *Super:
 		return true
 	}
 	return false

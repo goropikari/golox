@@ -150,6 +150,7 @@ func TestAstPrinter(t *testing.T) {
 				//     this.x = x
 				tlps.NewClass(
 					tlps.NewToken(tlps.IdentifierTT, "Hoge", nil, 1),
+					nil,
 					[]*tlps.Function{
 						tlps.NewFunction(
 							tlps.NewToken(tlps.IdentifierTT, "init", nil, 2),

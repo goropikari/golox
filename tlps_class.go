@@ -1,20 +1,26 @@
 package tlps
 
 type TLPSClass struct {
-	Name    string
-	Methods map[string]*TLPSFunction
+	Name       string
+	Superclass *TLPSClass
+	Methods    map[string]*TLPSFunction
 }
 
-func NewTLPSClass(name string, methods map[string]*TLPSFunction) *TLPSClass {
+func NewTLPSClass(name string, superclass *TLPSClass, methods map[string]*TLPSFunction) *TLPSClass {
 	return &TLPSClass{
-		Name:    name,
-		Methods: methods,
+		Name:       name,
+		Superclass: superclass,
+		Methods:    methods,
 	}
 }
 
 func (lc *TLPSClass) FindMethod(name string) (*TLPSFunction, error) {
 	if v, ok := lc.Methods[name]; ok {
 		return v, nil
+	}
+
+	if lc.Superclass != nil {
+		return lc.Superclass.FindMethod(name)
 	}
 
 	return nil, nil

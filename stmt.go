@@ -40,12 +40,13 @@ func (rec *Block) IsType(v interface{}) bool {
 }
 
 type Class struct {
-	Name    *Token
-	Methods []*Function
+	Name       *Token
+	Superclass *Variable
+	Methods    []*Function
 }
 
-func NewClass(name *Token, methods []*Function) Stmt {
-	return &Class{name, methods}
+func NewClass(name *Token, superclass *Variable, methods []*Function) Stmt {
+	return &Class{name, superclass, methods}
 }
 
 func (c *Class) Accept(visitor VisitorStmt) (interface{}, error) {
